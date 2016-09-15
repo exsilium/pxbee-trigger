@@ -1,0 +1,23 @@
+/* Create a combined Srecord file with the bootloader and application */
+OPENFILE "%ABS_FILE%.s19"
+format=motorola
+busWidth=1
+origin=0
+len=0x10000
+destination=0
+SRECORD=Sx
+SENDBYTE 1 "%ABS_FILE%"
+CLOSE
+
+/* Create a binary file just with the application */
+OPENFILE "%ABS_FILE%.bin"
+format=binary
+busWidth=1
+origin=0x8400
+len=0x6E00
+destination=0
+SRECORD=Sx
+SENDBYTE 1 "%ABS_FILE%"
+CLOSE
+
+    
