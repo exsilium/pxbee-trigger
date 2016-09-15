@@ -9,7 +9,7 @@
 #define __XBEE_CONFIG_H_
 
 /* Project definitions */
-#define APP_VERSION_STRING              "BlinkLed v0.0.1_OTA"
+#define APP_VERSION_STRING              "Trigger v0.0.1"
 #define CONFIG_XBEE_ZB
 #define CONFIG_XBEE_THT
 #define CONFIG_XBEE_S2B
@@ -61,6 +61,21 @@
 //#define XBEE_ATCMD_PARAM_ID             "0123456789ABCDEF"
 #define XBEE_ATCMD_PARAM_NI             "PROGRAMMABLE TEST 1"
 
+/* RELAY component */
+#define ENABLE_GPIO_XPIN_11
+#define RELAY                           XPIN_11
+#define GPIO_CFG_DIR_11                 GPIO_CFG_OUTPUT
+#define GPIO_CFG_PULL_UP_EN_11          GPIO_CFG_PULL_UP_DIS
+#define GPIO_CFG_SLEW_RATE_EN_11        GPIO_CFG_SLEW_RATE_EN
+#define GPIO_CFG_DRV_STR_11             GPIO_CFG_DRV_STR_LOW
+
+/* relayTimer component */
+#define ENABLE_TIMER
+#define relayTimer                      TPM1
+#define TPM1_OVERFLOW_INTERRUPT
+#define relayTimer_irq                  tpm1ov_irq
+#define ENABLE_TPM1
+
 /* Used pins macros */
 #define XPIN_15_USED
 #define XPIN_20_USED
@@ -70,7 +85,7 @@
 #define XPIN_7_USED
 #define XPIN_3_USED
 #define XPIN_2_USED
-
+#define XPIN_11_USED
 
 /* Components includes */
 #include <custom.h>
@@ -83,5 +98,6 @@
 #include <xbee/wpan.h>
 #include <xbee/atcmd.h>
 #include <uart.h>
+#include <timer.h>
 
 #endif /* __XBEE_CONFIG_H_ */

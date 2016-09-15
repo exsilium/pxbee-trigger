@@ -61,12 +61,20 @@ int xbee_transparent_rx(const wpan_envelope_t FAR *envelope, void FAR *context)
 {
 	char addrbuf[ADDR64_STRING_LENGTH];
 
-	puts("Received Simple Frame");
+	puts("Received Frame");
 	puts("---------------------");
 	sys_watchdog_reset();
-	printf("Source     : %s\n", addr64_format(addrbuf, &envelope->ieee_address));
-	printf("Network    : %04x\n", be16toh(envelope->network_address));
-	printf("Data length: %u\n", envelope->length);
+	printf("Cluster ID          : %u\n", envelope->cluster_id);
+	printf("Profile ID          : %u\n", envelope->profile_id);
+	printf("Source Endpoint     : %u\n", envelope->source_endpoint);
+	printf("Destination Endpoint: %u\n", envelope->dest_endpoint);
+	printf("Source              : %s\n", addr64_format(addrbuf, &envelope->ieee_address));
+	printf("Network             : %04x\n", be16toh(envelope->network_address));
+	printf("Options             : %u\n", envelope->options);
+	printf("Data length         : %u\n", envelope->length);
+	puts("---------------------");
+	puts(" P  A  Y  L  O  A  D ");
+	puts("---------------------");
 	sys_watchdog_reset();
 	dump(envelope->payload, envelope->length);
 	puts("\n");
@@ -79,6 +87,13 @@ int xbee_transparent_rx(const wpan_envelope_t FAR *envelope, void FAR *context)
 void rtc_periodic_task(void)
 {
 	gpio_set(LED, !gpio_get(LED));
+}
+#endif
+
+#ifdef relayTimer_irq 
+void relayTimer_irq(void)
+{
+	/* Write your code here */
 }
 #endif
 

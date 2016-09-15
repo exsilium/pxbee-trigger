@@ -30,7 +30,7 @@
 
 # Keep the APP_NAME short, as this is used throughout this Makefile for
 # files and identifiers.
-APP_NAME=blink_led
+APP_NAME=trigger
 
 # Toolchain and output. If you are using Docker to build, make sure the paths
 # are relative and within this directory to ensure container access.
