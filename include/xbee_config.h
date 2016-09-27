@@ -22,16 +22,16 @@
 #define WD_CFG_LONG_TOUT
 
 /* special0 component */
-#define ENABLE_ASSOCIATION_LED_XPIN_15
-#define ENABLE_COMMISSIONING_XPIN_20
+//#define ENABLE_ASSOCIATION_LED_XPIN_15
+//#define ENABLE_COMMISSIONING_XPIN_20
 #define ENABLE_RESET_PIN_XPIN_5
-#define ENABLE_BKGD_PIN_XPIN_8
-#define ENABLE_RSSI_PWM_XPIN_6
+//#define ENABLE_BKGD_PIN_XPIN_8
+//#define ENABLE_RSSI_PWM_XPIN_6
 
 /* rtc0 component */
 #define ENABLE_RTC
 #define RTC_ENABLE_PERIODIC_TASK
-#define RTC_CFG_PERIODIC_TASK_PERIOD    125
+#define RTC_CFG_PERIODIC_TASK_PERIOD    1000
 
 /* LED component */
 #define ENABLE_GPIO_XPIN_7
@@ -62,12 +62,76 @@
 #define XBEE_ATCMD_PARAM_NI             "PROGRAMMABLE TEST 1"
 
 /* RELAY component */
+#define ENABLE_GPIO_XPIN_17
+#define RELAY                           XPIN_17
+#define GPIO_CFG_DIR_17                 GPIO_CFG_OUTPUT
+#define GPIO_CFG_PULL_UP_EN_17          GPIO_CFG_PULL_UP_DIS
+#define GPIO_CFG_SLEW_RATE_EN_17        GPIO_CFG_SLEW_RATE_DIS
+#define GPIO_CFG_DRV_STR_17             GPIO_CFG_DRV_STR_HIGH
+
+/* GROVE Board Power Control for Grove socker */
+#define ENABLE_GPIO_XPIN_12
+#define PWR_CNTRL                       XPIN_12
+#define GPIO_CFG_DIR_12                 GPIO_CFG_OUTPUT
+#define GPIO_CFG_PULL_UP_EN_12          GPIO_CFG_PULL_UP_DIS
+#define GPIO_CFG_SLEW_RATE_EN_12        GPIO_CFG_SLEW_RATE_DIS
+#define GPIO_CFG_DRV_STR_12             GPIO_CFG_DRV_STR_LOW
+
+/* Disable other outputs by pulling low */
+#define ENABLE_GPIO_XPIN_19
+#define GPIO_CFG_DIR_19                 GPIO_CFG_OUTPUT
+#define GPIO_CFG_PULL_UP_EN_19          GPIO_CFG_PULL_UP_DIS
+#define GPIO_CFG_SLEW_RATE_EN_19        GPIO_CFG_SLEW_RATE_DIS
+#define GPIO_CFG_DRV_STR_19             GPIO_CFG_DRV_STR_LOW
+
+#define ENABLE_GPIO_XPIN_18
+#define GPIO_CFG_DIR_18                 GPIO_CFG_OUTPUT
+#define GPIO_CFG_PULL_UP_EN_18          GPIO_CFG_PULL_UP_DIS
+#define GPIO_CFG_SLEW_RATE_EN_18        GPIO_CFG_SLEW_RATE_DIS
+#define GPIO_CFG_DRV_STR_18             GPIO_CFG_DRV_STR_LOW
+
+#define ENABLE_GPIO_XPIN_16
+#define GPIO_CFG_DIR_16                 GPIO_CFG_OUTPUT
+#define GPIO_CFG_PULL_UP_EN_16          GPIO_CFG_PULL_UP_DIS
+#define GPIO_CFG_SLEW_RATE_EN_16        GPIO_CFG_SLEW_RATE_DIS
+#define GPIO_CFG_DRV_STR_16             GPIO_CFG_DRV_STR_HIGH
+
 #define ENABLE_GPIO_XPIN_11
-#define RELAY                           XPIN_11
 #define GPIO_CFG_DIR_11                 GPIO_CFG_OUTPUT
 #define GPIO_CFG_PULL_UP_EN_11          GPIO_CFG_PULL_UP_DIS
-#define GPIO_CFG_SLEW_RATE_EN_11        GPIO_CFG_SLEW_RATE_EN
+#define GPIO_CFG_SLEW_RATE_EN_11        GPIO_CFG_SLEW_RATE_DIS
 #define GPIO_CFG_DRV_STR_11             GPIO_CFG_DRV_STR_LOW
+
+#define ENABLE_GPIO_XPIN_4
+#define GPIO_CFG_DIR_4                  GPIO_CFG_OUTPUT
+#define GPIO_CFG_PULL_UP_EN_4           GPIO_CFG_PULL_UP_DIS
+#define GPIO_CFG_SLEW_RATE_EN_4         GPIO_CFG_SLEW_RATE_DIS
+#define GPIO_CFG_DRV_STR_4              GPIO_CFG_DRV_STR_LOW
+
+/* Disable special pins */
+#define ENABLE_GPIO_XPIN_15
+#define GPIO_CFG_DIR_15                 GPIO_CFG_OUTPUT
+#define GPIO_CFG_PULL_UP_EN_15          GPIO_CFG_PULL_UP_DIS
+#define GPIO_CFG_SLEW_RATE_EN_15        GPIO_CFG_SLEW_RATE_DIS
+#define GPIO_CFG_DRV_STR_15             GPIO_CFG_DRV_STR_LOW
+
+#define ENABLE_GPIO_XPIN_20
+#define GPIO_CFG_DIR_20                 GPIO_CFG_OUTPUT
+#define GPIO_CFG_PULL_UP_EN_20          GPIO_CFG_PULL_UP_DIS
+#define GPIO_CFG_SLEW_RATE_EN_20        GPIO_CFG_SLEW_RATE_DIS
+#define GPIO_CFG_DRV_STR_20             GPIO_CFG_DRV_STR_LOW
+
+#define ENABLE_GPIO_XPIN_8
+#define GPIO_CFG_DIR_8                  GPIO_CFG_OUTPUT
+#define GPIO_CFG_PULL_UP_EN_8           GPIO_CFG_PULL_UP_DIS
+#define GPIO_CFG_SLEW_RATE_EN_8         GPIO_CFG_SLEW_RATE_DIS
+#define GPIO_CFG_DRV_STR_8              GPIO_CFG_DRV_STR_LOW
+
+#define ENABLE_GPIO_XPIN_6
+#define GPIO_CFG_DIR_6                  GPIO_CFG_OUTPUT
+#define GPIO_CFG_PULL_UP_EN_6           GPIO_CFG_PULL_UP_DIS
+#define GPIO_CFG_SLEW_RATE_EN_6         GPIO_CFG_SLEW_RATE_DIS
+#define GPIO_CFG_DRV_STR_6              GPIO_CFG_DRV_STR_LOW
 
 /* relayTimer component */
 #define ENABLE_TIMER
@@ -85,7 +149,7 @@
 #define XPIN_7_USED
 #define XPIN_3_USED
 #define XPIN_2_USED
-#define XPIN_11_USED
+#define XPIN_17_USED
 
 /* Components includes */
 #include <custom.h>

@@ -45,7 +45,7 @@
  *   XPIN14 = VCC REF
  *   XPIN15 = special0 [Association Pin]
  *   XPIN16 = <<UNUSED>>
- *   XPIN17 = <<UNUSED>>
+ *   XPIN17 = RELAY [GPIO Pin]
  *   XPIN18 = <<UNUSED>>
  *   XPIN19 = <<UNUSED>>
  *   XPIN20 = special0 [Commissioning Pin]
@@ -87,6 +87,8 @@ int xbee_transparent_rx(const wpan_envelope_t FAR *envelope, void FAR *context)
 void rtc_periodic_task(void)
 {
 	gpio_set(LED, !gpio_get(LED));
+	gpio_set(RELAY, !gpio_get(LED));
+	gpio_set(XPIN_16, gpio_get(RELAY));
 }
 #endif
 
@@ -102,6 +104,22 @@ void main(void)
 	sys_hw_init();
 	sys_xbee_init();
 	sys_app_banner();
+	
+	gpio_set(XPIN_19, 0);
+	gpio_set(XPIN_18, 0);
+	gpio_set(XPIN_16, 0);
+	gpio_set(XPIN_11, 0);
+	gpio_set(XPIN_7,  0);
+	gpio_set(XPIN_4,  0);
+	
+	// Drive special pins low
+	gpio_set(XPIN_15, 0);
+	gpio_set(XPIN_20, 0);
+	gpio_set(XPIN_8,  0);
+	gpio_set(XPIN_6,  0);
+	
+	gpio_set(RELAY,     0);
+	gpio_set(PWR_CNTRL, 0);
 
 	for (;;) {
 		/* Nothing to do... 
