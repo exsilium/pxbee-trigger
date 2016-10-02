@@ -1,17 +1,17 @@
 /***** XBEE APPLICATION PROJECT *****
- * 
- * Auto-generated header with information about the 
- * relation between the XBee module pins and the 
+ *
+ * Auto-generated header with information about the
+ * relation between the XBee module pins and the
  * project components.
- * 
+ *
  ************ XBEE LAYOUT ***********
- * 
- * This layout represents the XBee ZB (S2B) module 
+ *
+ * This layout represents the XBee ZB (S2B) module
  * selected for the project with its pin distribution:
  *               _________________
- *              /     ________    \ 
- *             /     |   __   |    \ 
- *            /      | //  \\ |     \ 
+ *              /     ________    \
+ *             /     |   __   |    \
+ *            /      | //  \\ |     \
  *   XPIN1  -|       | \\__// |      |- XPIN20
  *   XPIN2  -|       |________|      |- XPIN19
  *   XPIN3  -|                       |- XPIN18
@@ -23,12 +23,12 @@
  *   XPIN9  -| #   # ####  #### #### |- XPIN12
  *   XPIN10 -| ===================== |- XPIN11
  *           |_______________________|
- * 
+ *
  ************ PINS LEGEND ***********
- * 
- * The following list displays all the XBee Module pins 
+ *
+ * The following list displays all the XBee Module pins
  * with the project component which is using each one:
- * 
+ *
  *   XPIN1 = VCC
  *   XPIN2 = uart0 [TX Pin]
  *   XPIN3 = uart0 [RX Pin]
@@ -47,7 +47,7 @@
  *   XPIN16 = <<UNUSED>>
  *   XPIN17 = RELAY [GPIO Pin]
  *   XPIN18 = <<UNUSED>>
- *   XPIN19 = <<UNUSED>>
+ *   XPIN19 = LED_GROVE
  *   XPIN20 = special0 [Commissioning Pin]
  *
  ************************************/
@@ -55,6 +55,45 @@
 
 #include <xbee_config.h>
 #include <types.h>
+
+// Custom profile and cluster implementation
+#define CUSTOM_EP_CUSTOM_CLUSTER	0x06
+
+int custom_ep_rx_cluster(const wpan_envelope_t FAR *envelope, void FAR *context);
+
+const wpan_cluster_table_entry_t custom_ep_clusters[] = {
+		{CUSTOM_EP_CUSTOM_CLUSTER, custom_ep_rx_cluster, NULL,
+		WPAN_CLUST_FLAG_INOUT | WPAN_CLUST_FLAG_NOT_ZCL},
+		WPAN_CLUST_ENTRY_LIST_END
+};
+
+
+int custom_ep_default_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
+{
+	uint8_t *payload_pointer = envelope->payload;
+
+	payload_pointer[envelope->length] = '\0'; /* Add Null-terminator for printing */
+	printf("\nCUSTOM ENDPOINT'S DEFAULT CLUSTER HANDLER\n");
+	printf("Received  : %s\n", payload_pointer);
+	printf("Cluster ID: %02X\n", envelope->cluster_id);
+	printf("Profile ID: %02X\n", envelope->profile_id);
+	printf("Destin. EP: %02X\n", envelope->dest_endpoint);
+	printf("Source  EP: %02X\n", envelope->source_endpoint);
+
+	return 0;
+}
+
+int custom_ep_rx_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
+{
+	uint8_t *payload_pointer = envelope->payload;
+
+	payload_pointer[envelope->length] = '\0'; /* Add Null-terminator for printing */
+	printf("\nCUSTOM ENDPOINT'S RX CLUSTER HANDLER\n");
+	printf("Received  : %s\n", payload_pointer);
+
+	return 0;
+}
+// END: Custom profile and cluster implementation
 
 #ifdef ENABLE_XBEE_HANDLE_RX
 int xbee_transparent_rx(const wpan_envelope_t FAR *envelope, void FAR *context)
@@ -79,6 +118,15 @@ int xbee_transparent_rx(const wpan_envelope_t FAR *envelope, void FAR *context)
 	dump(envelope->payload, envelope->length);
 	puts("\n");
 
+	/* Timer configuration */
+	//if(timer_config(relayTimer, FALSE, PERIODIC, 125000) == 0) {
+	//	puts("Timer successfully initialized!");
+	//}
+	//else {
+	//	puts("Timer initialization failed!");
+	//}
+	/* Timer end */
+
 	return 0;
 }
 #endif
@@ -87,15 +135,16 @@ int xbee_transparent_rx(const wpan_envelope_t FAR *envelope, void FAR *context)
 void rtc_periodic_task(void)
 {
 	gpio_set(LED, !gpio_get(LED));
-	gpio_set(RELAY, !gpio_get(LED));
-	gpio_set(XPIN_16, gpio_get(RELAY));
+	//gpio_set(RELAY, !gpio_get(LED));
+	//gpio_set(RELAY_2, gpio_get(RELAY));
 }
 #endif
 
-#ifdef relayTimer_irq 
+#ifdef relayTimer_irq
 void relayTimer_irq(void)
 {
-	/* Write your code here */
+	gpio_set(LED_GROVE, !gpio_get(LED_GROVE));
+	puts("EVENT TRIGGERED: relayTimer_irq");
 }
 #endif
 
@@ -104,25 +153,33 @@ void main(void)
 	sys_hw_init();
 	sys_xbee_init();
 	sys_app_banner();
-	
+
 	gpio_set(XPIN_19, 0);
 	gpio_set(XPIN_18, 0);
 	gpio_set(XPIN_16, 0);
 	gpio_set(XPIN_11, 0);
 	gpio_set(XPIN_7,  0);
 	gpio_set(XPIN_4,  0);
-	
+
 	// Drive special pins low
 	gpio_set(XPIN_15, 0);
 	gpio_set(XPIN_20, 0);
 	gpio_set(XPIN_8,  0);
 	gpio_set(XPIN_6,  0);
-	
-	gpio_set(RELAY,     0);
-	gpio_set(PWR_CNTRL, 0);
+
+	gpio_set(RELAY,           0);
+	gpio_set(LED_GROVE,       0);
+	gpio_set(PWR_CNTRL_RELAY, 0);
+	gpio_set(PWR_CNTRL_LED,   0);
+
+  //timer_config(relayTimer, TRUE, PERIODIC, 125000);
+	//timer_set_timeout(relayTimer, 125000);
+	//timer_set_mode(relayTimer, PERIODIC);
+	//timer_irq_enable(relayTimer, TRUE);
+	//timer_enable(relayTimer, TRUE);
 
 	for (;;) {
-		/* Nothing to do... 
+		/* Nothing to do...
 		 * Everything is done in the periodic task
 		 */
 		sys_watchdog_reset();

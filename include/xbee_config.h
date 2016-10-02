@@ -61,6 +61,14 @@
 //#define XBEE_ATCMD_PARAM_ID             "0123456789ABCDEF"
 #define XBEE_ATCMD_PARAM_NI             "PROGRAMMABLE TEST 1"
 
+/* GROVE LED component on the XBee Carrier (I2C socket) */
+#define ENABLE_GPIO_XPIN_19
+#define LED_GROVE                       XPIN_19
+#define GPIO_CFG_DIR_19                 GPIO_CFG_OUTPUT
+#define GPIO_CFG_PULL_UP_EN_19          GPIO_CFG_PULL_UP_DIS
+#define GPIO_CFG_SLEW_RATE_EN_19        GPIO_CFG_SLEW_RATE_DIS
+#define GPIO_CFG_DRV_STR_19             GPIO_CFG_DRV_STR_HIGH
+
 /* RELAY component */
 #define ENABLE_GPIO_XPIN_17
 #define RELAY                           XPIN_17
@@ -69,38 +77,34 @@
 #define GPIO_CFG_SLEW_RATE_EN_17        GPIO_CFG_SLEW_RATE_DIS
 #define GPIO_CFG_DRV_STR_17             GPIO_CFG_DRV_STR_HIGH
 
-/* GROVE Board Power Control for Grove socker */
-#define ENABLE_GPIO_XPIN_12
-#define PWR_CNTRL                       XPIN_12
-#define GPIO_CFG_DIR_12                 GPIO_CFG_OUTPUT
-#define GPIO_CFG_PULL_UP_EN_12          GPIO_CFG_PULL_UP_DIS
-#define GPIO_CFG_SLEW_RATE_EN_12        GPIO_CFG_SLEW_RATE_DIS
-#define GPIO_CFG_DRV_STR_12             GPIO_CFG_DRV_STR_LOW
-
-/* Disable other outputs by pulling low */
-#define ENABLE_GPIO_XPIN_19
-#define GPIO_CFG_DIR_19                 GPIO_CFG_OUTPUT
-#define GPIO_CFG_PULL_UP_EN_19          GPIO_CFG_PULL_UP_DIS
-#define GPIO_CFG_SLEW_RATE_EN_19        GPIO_CFG_SLEW_RATE_DIS
-#define GPIO_CFG_DRV_STR_19             GPIO_CFG_DRV_STR_LOW
-
-#define ENABLE_GPIO_XPIN_18
-#define GPIO_CFG_DIR_18                 GPIO_CFG_OUTPUT
-#define GPIO_CFG_PULL_UP_EN_18          GPIO_CFG_PULL_UP_DIS
-#define GPIO_CFG_SLEW_RATE_EN_18        GPIO_CFG_SLEW_RATE_DIS
-#define GPIO_CFG_DRV_STR_18             GPIO_CFG_DRV_STR_LOW
-
 #define ENABLE_GPIO_XPIN_16
+#define RELAY_2                         XPIN_16
 #define GPIO_CFG_DIR_16                 GPIO_CFG_OUTPUT
 #define GPIO_CFG_PULL_UP_EN_16          GPIO_CFG_PULL_UP_DIS
 #define GPIO_CFG_SLEW_RATE_EN_16        GPIO_CFG_SLEW_RATE_DIS
 #define GPIO_CFG_DRV_STR_16             GPIO_CFG_DRV_STR_HIGH
 
+/* GROVE XBee Carrier Board Power Control for GROVE sockets */
+#define ENABLE_GPIO_XPIN_12
+#define PWR_CNTRL_RELAY                 XPIN_12
+#define GPIO_CFG_DIR_12                 GPIO_CFG_OUTPUT
+#define GPIO_CFG_PULL_UP_EN_12          GPIO_CFG_PULL_UP_DIS
+#define GPIO_CFG_SLEW_RATE_EN_12        GPIO_CFG_SLEW_RATE_DIS
+#define GPIO_CFG_DRV_STR_12             GPIO_CFG_DRV_STR_LOW
+
 #define ENABLE_GPIO_XPIN_11
+#define PWR_CNTRL_LED                   XPIN_11
 #define GPIO_CFG_DIR_11                 GPIO_CFG_OUTPUT
 #define GPIO_CFG_PULL_UP_EN_11          GPIO_CFG_PULL_UP_DIS
 #define GPIO_CFG_SLEW_RATE_EN_11        GPIO_CFG_SLEW_RATE_DIS
 #define GPIO_CFG_DRV_STR_11             GPIO_CFG_DRV_STR_LOW
+
+/* Disable other outputs by pulling low */
+#define ENABLE_GPIO_XPIN_18
+#define GPIO_CFG_DIR_18                 GPIO_CFG_OUTPUT
+#define GPIO_CFG_PULL_UP_EN_18          GPIO_CFG_PULL_UP_DIS
+#define GPIO_CFG_SLEW_RATE_EN_18        GPIO_CFG_SLEW_RATE_DIS
+#define GPIO_CFG_DRV_STR_18             GPIO_CFG_DRV_STR_LOW
 
 #define ENABLE_GPIO_XPIN_4
 #define GPIO_CFG_DIR_4                  GPIO_CFG_OUTPUT
@@ -109,17 +113,17 @@
 #define GPIO_CFG_DRV_STR_4              GPIO_CFG_DRV_STR_LOW
 
 /* Disable special pins */
-#define ENABLE_GPIO_XPIN_15
-#define GPIO_CFG_DIR_15                 GPIO_CFG_OUTPUT
-#define GPIO_CFG_PULL_UP_EN_15          GPIO_CFG_PULL_UP_DIS
-#define GPIO_CFG_SLEW_RATE_EN_15        GPIO_CFG_SLEW_RATE_DIS
-#define GPIO_CFG_DRV_STR_15             GPIO_CFG_DRV_STR_LOW
-
 #define ENABLE_GPIO_XPIN_20
 #define GPIO_CFG_DIR_20                 GPIO_CFG_OUTPUT
 #define GPIO_CFG_PULL_UP_EN_20          GPIO_CFG_PULL_UP_DIS
 #define GPIO_CFG_SLEW_RATE_EN_20        GPIO_CFG_SLEW_RATE_DIS
 #define GPIO_CFG_DRV_STR_20             GPIO_CFG_DRV_STR_LOW
+
+#define ENABLE_GPIO_XPIN_15
+#define GPIO_CFG_DIR_15                 GPIO_CFG_OUTPUT
+#define GPIO_CFG_PULL_UP_EN_15          GPIO_CFG_PULL_UP_DIS
+#define GPIO_CFG_SLEW_RATE_EN_15        GPIO_CFG_SLEW_RATE_DIS
+#define GPIO_CFG_DRV_STR_15             GPIO_CFG_DRV_STR_LOW
 
 #define ENABLE_GPIO_XPIN_8
 #define GPIO_CFG_DIR_8                  GPIO_CFG_OUTPUT
@@ -141,8 +145,9 @@
 #define ENABLE_TPM1
 
 /* Used pins macros */
-#define XPIN_15_USED
 #define XPIN_20_USED
+#define XPIN_19_USED
+#define XPIN_15_USED
 #define XPIN_5_USED
 #define XPIN_8_USED
 #define XPIN_6_USED
@@ -150,6 +155,7 @@
 #define XPIN_3_USED
 #define XPIN_2_USED
 #define XPIN_17_USED
+#define XPIN_16_USED
 
 /* Components includes */
 #include <custom.h>
