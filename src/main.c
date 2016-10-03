@@ -148,6 +148,9 @@ void relayTimer_irq(void)
 }
 #endif
 
+/* Global for the ZDO state keeping */
+wpan_ep_state_t zdo_ep_state;
+
 void main(void)
 {
 	sys_hw_init();
