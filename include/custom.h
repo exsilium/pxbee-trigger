@@ -26,4 +26,4 @@ extern wpan_ep_state_t zdo_ep_state;
 
  /* This macro is automatically defined if Process Incoming frames, Node Discovery Support or Over-the-Air
   * Firmware Update are enabled, otherwise it should be defined so the library handles frames */
- #define ENABLE_XBEE_HANDLE_RX_ZCL_FRAMES
+#define ENABLE_XBEE_HANDLE_RX_ZCL_FRAMES
