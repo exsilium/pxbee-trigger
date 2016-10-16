@@ -66,7 +66,7 @@ const wpan_cluster_table_entry_t custom_ep_clusters[] = {
     {CUSTOM_EP_CUSTOM_CLUSTER, custom_ep_rx_cluster, NULL,
     WPAN_CLUST_FLAG_INOUT | WPAN_CLUST_FLAG_NOT_ZCL},
     WPAN_CLUST_ENTRY_LIST_END
-;
+};
 
 
 int custom_ep_default_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
@@ -178,8 +178,9 @@ void rtc_periodic_task(void)
 #ifdef relayTimer_irq
 void relayTimer_irq(void)
 {
-  gpio_set(LED_GROVE, !gpio_get(LED_GROVE));
   puts("EVENT TRIGGERED: relayTimer_irq");
+  gpio_set(RELAY,   0);
+  gpio_set(RELAY_2, 0);
 }
 #endif
 
