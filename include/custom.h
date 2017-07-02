@@ -11,7 +11,7 @@ extern wpan_ep_state_t zdo_ep_state;
 #define ZIGBEE_ZDO_VERBOSE
 
 #define CUSTOM_ENDPOINT     0xEA
-#define CUSTOM_EP_PROFILE   0xEAA4
+#define CUSTOM_EP_PROFILE   0x0104
 
  /* With this macro the prototypes of clusters' callbacks and extern variables are included in endpoints.c
   * Array custom_ep_data_clusters[] is declared in main.c

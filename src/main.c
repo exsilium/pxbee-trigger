@@ -59,6 +59,8 @@
 // Custom profile and cluster implementation
 #define CUSTOM_EP_CUSTOM_CLUSTER  0x06
 
+zcl_command_t zcl;
+
 int trigger(void);
 int custom_ep_rx_cluster(const wpan_envelope_t FAR *envelope, void FAR *context);
 
@@ -72,14 +74,76 @@ const wpan_cluster_table_entry_t custom_ep_clusters[] = {
 int custom_ep_default_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
 {
   uint8_t *payload_pointer = envelope->payload;
+  int i = 0;
 
   payload_pointer[envelope->length] = '\0'; /* Add Null-terminator for printing */
   printf("\nCUSTOM ENDPOINT'S DEFAULT CLUSTER HANDLER\n");
   printf("Received  : %s\n", payload_pointer);
-  printf("Cluster ID: %02X\n", envelope->cluster_id);
-  printf("Profile ID: %02X\n", envelope->profile_id);
-  printf("Destin. EP: %02X\n", envelope->dest_endpoint);
-  printf("Source  EP: %02X\n", envelope->source_endpoint);
+  if(envelope->length > 0) {
+    printf("Payload in Hex: ");
+    for(i = 0; i < envelope->length; i++) {
+      printf("%02X ", payload_pointer[i]);
+    }
+    printf("\n");
+  }
+  printf("Payload length: %02X\n", envelope->length);
+  printf("Cluster ID:     %02X\n", envelope->cluster_id);
+  printf("Profile ID:     %02X\n", envelope->profile_id);
+  printf("Destin. EP:     %02X\n", envelope->dest_endpoint);
+  printf("Source  EP:     %02X\n", envelope->source_endpoint);
+
+  /* Let's try to debug the ZCL command */
+  zcl_envelope_payload_dump(envelope);
+
+  /* Let's try to respond */
+  printf("\n\nBuilding ZCL Command based on received envelope: ");
+  if(zcl_command_build(&zcl, envelope, context) == 0) {
+    printf("OK!\n");
+    printf("----------------------\n");
+    printf("Frame Control: %02X\n", zcl.frame_control);
+    printf("Command: %02X\n", zcl.command);
+    printf("ZCL Payload length: %02X\n", zcl.length);
+    hex_dump(zcl.zcl_payload, zcl.length, HEX_DUMP_FLAG_TAB);
+
+    if(ZCL_CMD_MATCH( &zcl.frame_control, GENERAL, CLIENT_TO_SERVER, PROFILE)) {
+      if(zcl.command == ZCL_CMD_READ_ATTRIB && zcl.length == 2) {
+        const char FAR *zclPayload = zcl.zcl_payload;
+        uint8_t                 *start_response;
+        uint8_t									*end_response;
+        PACKED_STRUCT {
+          zcl_header_response_t	header;
+          uint8_t								buffer[10];
+        } response;
+
+        response.header.command = ZCL_CMD_READ_ATTRIB_RESP;
+        start_response = (uint8_t *)&response + zcl_build_header(&response.header, &zcl);
+        end_response = response.buffer;
+
+        if(zclPayload[0] == 0x01 && zclPayload[1] == 0x00) {
+          /* Application version request */
+          *end_response++ = 0x01;
+          *end_response++ = 0x00;
+          *end_response++ = ZCL_STATUS_SUCCESS;
+          *end_response++ = 0x20;
+          *end_response++ = 0x00;
+
+          printf("Response length: %02X\n", end_response - start_response);
+          if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
+            printf("Response sent successfully");
+          }
+        }
+        else if(zclPayload[0] == 0x04 && zclPayload[1] == 0x00) {
+          /* Device manufacturer request */
+        }
+        else if(zclPayload[0] == 0x05 && zclPayload[1] == 0x00) {
+          /* Device developer request */
+        }
+      }
+    }
+  }
+  else {
+    printf("Error!\n");
+  }
 
   return 0;
 }
@@ -153,15 +217,6 @@ int xbee_transparent_rx(const wpan_envelope_t FAR *envelope, void FAR *context)
   dump(envelope->payload, envelope->length);
   puts("\n");
 
-  /* Timer configuration */
-  //if(timer_config(relayTimer, FALSE, PERIODIC, 125000) == 0) {
-  //  puts("Timer successfully initialized!");
-  //}
-  //else {
-  //  puts("Timer initialization failed!");
-  //}
-  /* Timer end */
-
   return 0;
 }
 #endif
@@ -189,6 +244,8 @@ wpan_ep_state_t zdo_ep_state;
 
 void main(void)
 {
+  uint8_t option;
+
   sys_hw_init();
   sys_xbee_init();
   sys_app_banner();
@@ -211,10 +268,35 @@ void main(void)
   gpio_set(PWR_CNTRL_RELAY, 0);
   gpio_set(PWR_CNTRL_LED,   0);
 
+  printf("> ");
+
   for (;;) {
-    /* Nothing to do...
-     * Everything is done in the periodic task
-     */
+
+    /* Interactive menu for action control */
+    if(uart_bytes_in_rx_buffer() > 0) {
+      uart_read(&option, 1);
+      printf("Got char: %u\n", option);
+      if(option == 49) { /* 1 */
+
+      }
+      else if(option == 98 || option == 66) { /* b || B */
+        sys_app_banner();
+      }
+      else if(option == 104 || option == 72) { /* h || H */
+        puts("Woohoooo!");
+
+      }
+      else {
+        puts("---------------------");
+        puts("|      H E L P      |");
+        puts("---------------------");
+        puts("1 - Yabadabadoo");
+        puts("");
+      }
+      printf("> ");
+    }
+    /* End of interactive menu */
+
     sys_watchdog_reset();
     sys_xbee_tick();
   }
