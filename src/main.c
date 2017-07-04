@@ -171,7 +171,7 @@ int custom_ep_default_cluster(const wpan_envelope_t FAR *envelope, void FAR *con
 
           printf("Response length: %02X\n", end_response - start_response);
           if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
-            printf("Response sent successfully");
+            printf("Response sent successfully\n");
           }
         }
       }
@@ -188,12 +188,15 @@ int custom_ep_default_cluster(const wpan_envelope_t FAR *envelope, void FAR *con
 
 int custom_ep_rx_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
 {
-  uint8_t *payload_pointer = envelope->payload;
+  uint8_t                 *start_response;
+  uint8_t									*end_response;
+  PACKED_STRUCT {
+    zcl_header_response_t	header;
+    uint8_t								buffer[20];
+  } response;
 
-  payload_pointer[envelope->length] = '\0'; /* Add Null-terminator for printing */
-  printf("\nCUSTOM ENDPOINT'S RX CLUSTER HANDLER\n");
-  printf("Received  : %s\n", payload_pointer);
-  
+  printf("\nCUSTOM ENDPOINT HANDLER\n");
+  printf("=======================\n");
   printf("\n\nBuilding ZCL Command based on received envelope: ");
   if(zcl_command_build(&zcl, envelope, context) == 0) {
     printf("OK!\n");
@@ -202,8 +205,107 @@ int custom_ep_rx_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
     printf("Command: %02X\n", zcl.command);
     printf("ZCL Payload length: %02X\n", zcl.length);
     hex_dump(zcl.zcl_payload, zcl.length, HEX_DUMP_FLAG_TAB);
-    
+    printf("----------------------\n");
+    zcl_envelope_payload_dump(envelope);
     // Handle all the commands
+
+    if(ZCL_CMD_MATCH(&zcl.frame_control, GENERAL, CLIENT_TO_SERVER, PROFILE)) {
+      if(zcl.command == ZCL_CMD_READ_ATTRIB) {
+        // Profile command received (Read attribute) for switch state
+        printf("Handling response for switch state read\n");
+
+        response.header.command = ZCL_CMD_READ_ATTRIB_RESP;
+        start_response = (uint8_t *)&response + zcl_build_header(&response.header, &zcl);
+        end_response = response.buffer;
+
+        *end_response++ = 0x00;
+        *end_response++ = 0x00;
+        *end_response++ = ZCL_STATUS_SUCCESS;
+        *end_response++ = ZCL_TYPE_LOGICAL_BOOLEAN;
+        *end_response++ = 0x00; // Always return off state
+
+        printf("Response length: %02X\n", end_response - start_response);
+        if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
+          printf("Response sent successfully\n");
+        }
+      }
+      else if(zcl.command == ZCL_CMD_CONFIGURE_REPORT) {
+        // Profile command received (Configure report) for switch state
+        printf("Handling response for configure report command\n");
+
+        response.header.command = ZCL_CMD_CONFIGURE_REPORT_RESP;
+        start_response = (uint8_t *)&response + zcl_build_header(&response.header, &zcl);
+        end_response = response.buffer;
+
+        *end_response++ = ZCL_STATUS_SUCCESS;
+        *end_response++ = ZCL_DIRECTION_SEND;
+        *end_response++ = 0x00;
+        *end_response++ = 0x00;
+
+        printf("Response length: %02X\n", end_response - start_response);
+        if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
+          printf("Response sent successfully\n");
+        }
+      }
+      else {
+        printf("Unhandled Profile command received\n");
+      }
+    }
+    else if(ZCL_CMD_MATCH(&zcl.frame_control, GENERAL, CLIENT_TO_SERVER, CLUSTER)) {
+      // Cluster command received
+      printf("Handling switch change command\n");
+      switch(zcl.command) {
+        case 0x00:
+          printf("Turn off command received\n");
+          break;
+
+        case 0x01:
+          printf("Turn on command received\n");
+          trigger();
+          break;
+
+        case 0x02:
+          printf("Toggle command received\n");
+          break;
+
+        default:
+          printf("Unknown command received\n");
+          break;
+      }
+
+      // Send back response (not sure we should, we get back ZCL_STATUS_UNSUP_CLUSTER_COMMAND)
+      /*response.header.command = ZCL_CMD_DEFAULT_RESP;
+
+      end_response = response.buffer;
+
+      *end_response++ = zcl.command;
+      *end_response++ = 0x00; // Success
+
+      start_response = (uint8_t *)&response + zcl_build_header(&response.header, &zcl);
+
+      printf("Response length: %02X\n", end_response - start_response);
+      if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
+        printf("Response sent successfully\n");
+      }*/
+
+      response.header.command = ZCL_CMD_REPORT_ATTRIB;
+      response.header.sequence++;
+      response.header.u.std.frame_control = 0x0C;
+
+      start_response = (uint8_t *)&response + 2;
+      end_response = response.buffer;
+
+      *end_response++ = 0x00;
+      *end_response++ = 0x00;
+      *end_response++ = ZCL_TYPE_LOGICAL_BOOLEAN;
+      *end_response++ = 0x00; // Report Off state
+
+      printf("Response length: %02X\n", end_response - start_response);
+      if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
+        printf("Response sent successfully\n");
+      }
+
+    }
   }
   else {
     printf("Error!\n");
@@ -393,10 +495,14 @@ void main(void)
         printf("AP ");
         xbee_cmd_simple(&xdev, "AP", XBEE_PARAM_AP);
         printf("KY ");
-        xbee_cmd_execute(&xdev, "KY", XBEE_PARAM_KY, (sizeof(XBEE_PARAM_KY)-1) / sizeof(char));
+        xbee_cmd_execute(&xdev, "KY", XBEE_PARAM_KY, (sizeof(XBEE_PARAM_KY) - 1) / sizeof(char));
         printf("WR ");
         xbee_cmd_execute(&xdev, "WR", NULL, 0);
         printf("Done!\n\n");
+      }
+      else if(option == 48) { /* 0 */
+        printf("\n Resetting Network\n");
+        xbee_cmd_simple(&xdev, "NR", 0);
       }
       else if(option == 98 || option == 66) { /* b || B */
         sys_app_banner();
@@ -410,7 +516,7 @@ void main(void)
         puts("-------------------------------------");
         puts("[1] - Print Operating PAN ID");
         puts("[2] - Init additional radio settings");
-        puts("[0] - Leave network (NOT IMPLEMENTED)");
+        puts("[0] - Local network reset");
         puts("");
       }
       printf("> ");
