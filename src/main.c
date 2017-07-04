@@ -57,7 +57,8 @@
 #include <types.h>
 
 // Custom profile and cluster implementation
-#define CUSTOM_EP_CUSTOM_CLUSTER  0x06
+#define CUSTOM_EP_NULL_CLUSTER    0x0000
+#define CUSTOM_EP_CUSTOM_CLUSTER  0x0006
 
 zcl_command_t zcl;
 
@@ -65,8 +66,8 @@ int trigger(void);
 int custom_ep_rx_cluster(const wpan_envelope_t FAR *envelope, void FAR *context);
 
 const wpan_cluster_table_entry_t custom_ep_clusters[] = {
-    {CUSTOM_EP_CUSTOM_CLUSTER, custom_ep_rx_cluster, NULL,
-    WPAN_CLUST_FLAG_INOUT | WPAN_CLUST_FLAG_NOT_ZCL},
+    {CUSTOM_EP_NULL_CLUSTER, NULL, NULL, WPAN_CLUST_FLAG_INPUT},
+    {CUSTOM_EP_CUSTOM_CLUSTER, custom_ep_rx_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
     WPAN_CLUST_ENTRY_LIST_END
 };
 
@@ -112,7 +113,7 @@ int custom_ep_default_cluster(const wpan_envelope_t FAR *envelope, void FAR *con
         uint8_t									*end_response;
         PACKED_STRUCT {
           zcl_header_response_t	header;
-          uint8_t								buffer[10];
+          uint8_t								buffer[20];
         } response;
 
         response.header.command = ZCL_CMD_READ_ATTRIB_RESP;
@@ -121,6 +122,7 @@ int custom_ep_default_cluster(const wpan_envelope_t FAR *envelope, void FAR *con
 
         if(zclPayload[0] == 0x01 && zclPayload[1] == 0x00) {
           /* Application version request */
+          printf("Handling response for Application version request\n");
           *end_response++ = 0x01;
           *end_response++ = 0x00;
           *end_response++ = ZCL_STATUS_SUCCESS;
@@ -134,9 +136,43 @@ int custom_ep_default_cluster(const wpan_envelope_t FAR *envelope, void FAR *con
         }
         else if(zclPayload[0] == 0x04 && zclPayload[1] == 0x00) {
           /* Device manufacturer request */
+          printf("Handling response for Device manufacturer request\n");
+          *end_response++ = 0x04;
+          *end_response++ = 0x00;
+          *end_response++ = ZCL_STATUS_SUCCESS;
+          *end_response++ = 0x42;
+          *end_response++ = 0x05; // Length of data
+          *end_response++ = 'P';
+          *end_response++ = 'X';
+          *end_response++ = 'B';
+          *end_response++ = 'e';
+          *end_response++ = 'e';
+
+          printf("Response length: %02X\n", end_response - start_response);
+          if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
+            printf("Response sent successfully");
+          }
         }
         else if(zclPayload[0] == 0x05 && zclPayload[1] == 0x00) {
           /* Device developer request */
+          printf("Handling response for Device developer request\n");
+          *end_response++ = 0x05;
+          *end_response++ = 0x00;
+          *end_response++ = ZCL_STATUS_SUCCESS;
+          *end_response++ = 0x42;
+          *end_response++ = 0x07; // Length of data
+          *end_response++ = 'T';
+          *end_response++ = 'r';
+          *end_response++ = 'i';
+          *end_response++ = 'g';
+          *end_response++ = 'g';
+          *end_response++ = 'e';
+          *end_response++ = 'r';
+
+          printf("Response length: %02X\n", end_response - start_response);
+          if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
+            printf("Response sent successfully");
+          }
         }
       }
     }
@@ -144,6 +180,8 @@ int custom_ep_default_cluster(const wpan_envelope_t FAR *envelope, void FAR *con
   else {
     printf("Error!\n");
   }
+
+  printf("=====================================================================\n");
 
   return 0;
 }
@@ -250,6 +288,18 @@ void main(void)
   sys_xbee_init();
   sys_app_banner();
 
+  // Additionnal XBee settings
+  /*printf("\n Setting additional radio settings: ");
+  xbee_cmd_simple(&xdev, "ZS", 2);
+  xbee_cmd_simple(&xdev, "NJ", 0x5A);
+  xbee_cmd_simple(&xdev, "NH", 0x1E);
+  xbee_cmd_simple(&xdev, "NO", 3);
+  xbee_cmd_simple(&xdev, "EE", 1);
+  xbee_cmd_simple(&xdev, "EO", 1);
+  xbee_cmd_simple(&xdev, "AP", 2);
+  xbee_cmd_execute(&xdev, "NI", XBEE_PARAM_KY, (sizeof(XBEE_PARAM_KY)-1) / sizeof(char));
+  printf("Done!\n\n");*/
+
   gpio_set(XPIN_19, 0);
   gpio_set(XPIN_18, 0);
   gpio_set(XPIN_16, 0);
@@ -290,7 +340,8 @@ void main(void)
         puts("---------------------");
         puts("|      H E L P      |");
         puts("---------------------");
-        puts("1 - Yabadabadoo");
+        puts("1 - Print active PAN");
+        puts("0 - Leave network");
         puts("");
       }
       printf("> ");

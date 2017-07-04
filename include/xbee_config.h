@@ -59,6 +59,7 @@
 
 /* xbee_config0 component */
 //#define XBEE_ATCMD_PARAM_ID             "0123456789ABCDEF"
+#define XBEE_ATCMD_PARAM_SC             0x7FFF
 #define XBEE_ATCMD_PARAM_NI             "PROGRAMMABLE TEST 1"
 
 /* GROVE LED component on the XBee Carrier (I2C socket) */
