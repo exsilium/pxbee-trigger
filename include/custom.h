@@ -5,11 +5,21 @@
  * the project.
  *
  */
+ 
+/* Additional XBee settings */
+#define XBEE_PARAM_ZS       2
+#define XBEE_PARAM_NJ       0x5A
+#define XBEE_PARAM_NH       0x1E
+#define XBEE_PARAM_NO       3
+#define XBEE_PARAM_AP       2
+#define XBEE_PARAM_EE       1
+#define XBEE_PARAM_EO       1
+#define XBEE_PARAM_KY       "5A6967426565416C6C69616E63653039"
+ 
 #include <zigbee/zdo.h>
 
 extern wpan_ep_state_t zdo_ep_state;
 extern wpan_ep_state_t custom_ha_ep_state;
-#define ZIGBEE_ZDO_VERBOSE
 
 #define CUSTOM_ENDPOINT     0xEA
 #define CUSTOM_EP_PROFILE   0x0104
@@ -28,6 +38,3 @@ extern wpan_ep_state_t custom_ha_ep_state;
  /* This macro is automatically defined if Process Incoming frames, Node Discovery Support or Over-the-Air
   * Firmware Update are enabled, otherwise it should be defined so the library handles frames */
 #define ENABLE_XBEE_HANDLE_RX_ZCL_FRAMES
-
- /* Additional XBee settings */
-#define XBEE_PARAM_KY       "5A6967426565416C6C69616E63653039"

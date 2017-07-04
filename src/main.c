@@ -193,44 +193,92 @@ int custom_ep_rx_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
   payload_pointer[envelope->length] = '\0'; /* Add Null-terminator for printing */
   printf("\nCUSTOM ENDPOINT'S RX CLUSTER HANDLER\n");
   printf("Received  : %s\n", payload_pointer);
-
-  if(envelope->length > 0) {
-    /** We only check the first command byte
-     *  0x00 - Off
-     *  0x01 - On
-     *  0x02 - Toggle
-     *  0x03..0xff (Reserved)
-     *  ---
-     *  0x03 - Impulse
-     */
-    switch (payload_pointer[0]) {
-
-    case 0x00 :
-      printf("Turn off command received\n");
-      break;
-
-    case 0x01 :
-      printf("Turn on command received\n");
-      break;
-
-    case 0x02 :
-      printf("Toggle command received\n");
-      break;
-
-    case 0x03 :
-      printf("Impulse command received\n");
-      trigger();
-      break;
-
-    default:
-      printf("Unknown command received\n");
-      break;
-    }
+  
+  printf("\n\nBuilding ZCL Command based on received envelope: ");
+  if(zcl_command_build(&zcl, envelope, context) == 0) {
+    printf("OK!\n");
+    printf("----------------------\n");
+    printf("Frame Control: %02X\n", zcl.frame_control);
+    printf("Command: %02X\n", zcl.command);
+    printf("ZCL Payload length: %02X\n", zcl.length);
+    hex_dump(zcl.zcl_payload, zcl.length, HEX_DUMP_FLAG_TAB);
+    
+    // Handle all the commands
+  }
+  else {
+    printf("Error!\n");
   }
 
   return 0;
 }
 // END: Custom profile and cluster implementation
+
+/* Callback function for XBee commands */
+int xbee_cmd_callback( const xbee_cmd_response_t FAR *response)
+{
+	bool_t printable;
+	uint_fast8_t length, i;
+	uint8_t status;
+	const uint8_t FAR *p;
+
+	printf( "AT%.*" PRIsFAR " ", 2, response->command.str);
+
+	if (response->flags & XBEE_CMD_RESP_FLAG_TIMEOUT)
+	{
+		puts( "(timed out)");
+		return XBEE_ATCMD_DONE;
+	}
+
+	status = response->flags & XBEE_CMD_RESP_MASK_STATUS;
+	if (status != XBEE_AT_RESP_SUCCESS)
+	{
+		printf( "(error: %s)\n",
+			(status == XBEE_AT_RESP_ERROR) ? "general" :
+			(status == XBEE_AT_RESP_BAD_COMMAND) ? "bad command" :
+			(status == XBEE_AT_RESP_BAD_PARAMETER) ? "bad parameter" :
+			(status == XBEE_AT_RESP_TX_FAIL) ? "Tx failure" :
+														  "unknown error");
+		return XBEE_ATCMD_DONE;
+	}
+
+	length = response->value_length;
+	if (! length)		// command sent successfully, no value to report
+	{
+		puts( "(success)");
+		return XBEE_ATCMD_DONE;
+	}
+
+	// check to see if we can print the value out as a string
+	printable = 1;
+	p = response->value_bytes;
+	for (i = length; i; ++p, --i)
+	{
+		if (! isprint( *p))
+		{
+			printable = 0;
+			break;
+		}
+	}
+
+	if (printable)
+	{
+		printf( "= \"%.*" PRIsFAR "\" ", length, response->value_bytes);
+	}
+	if (length <= 4)
+	{
+		// format hex string with (2 * number of bytes in value) leading zeros
+		printf( "= 0x%0*" PRIX32 " (%" PRIu32 ")\n", length * 2, response->value,
+			response->value);
+	}
+	else
+	{
+		printf( "= %d bytes:\n", length);
+		hex_dump( response->value_bytes, length, HEX_DUMP_FLAG_TAB);
+	}
+
+	return XBEE_ATCMD_DONE;
+}
+// END: Callback functions for XBee commands
 
 #ifdef ENABLE_XBEE_HANDLE_RX
 int xbee_transparent_rx(const wpan_envelope_t FAR *envelope, void FAR *context)
@@ -288,18 +336,6 @@ void main(void)
   sys_xbee_init();
   sys_app_banner();
 
-  // Additionnal XBee settings
-  /*printf("\n Setting additional radio settings: ");
-  xbee_cmd_simple(&xdev, "ZS", 2);
-  xbee_cmd_simple(&xdev, "NJ", 0x5A);
-  xbee_cmd_simple(&xdev, "NH", 0x1E);
-  xbee_cmd_simple(&xdev, "NO", 3);
-  xbee_cmd_simple(&xdev, "EE", 1);
-  xbee_cmd_simple(&xdev, "EO", 1);
-  xbee_cmd_simple(&xdev, "AP", 2);
-  xbee_cmd_execute(&xdev, "NI", XBEE_PARAM_KY, (sizeof(XBEE_PARAM_KY)-1) / sizeof(char));
-  printf("Done!\n\n");*/
-
   gpio_set(XPIN_19, 0);
   gpio_set(XPIN_18, 0);
   gpio_set(XPIN_16, 0);
@@ -327,21 +363,53 @@ void main(void)
       uart_read(&option, 1);
       printf("Got char: %u\n", option);
       if(option == 49) { /* 1 */
-
+        int16_t request;
+        
+        printf("\nRequesting Operating PAN ID (OP)\n");
+        request = xbee_cmd_create(&xdev, "OP");
+        if (request < 0) {
+		      printf( "Error creating request: %d (%" PRIsFAR ") \n", request, strerror( -request));
+	      }
+	      else  {
+	        xbee_cmd_set_callback(request, xbee_cmd_callback, NULL);
+	        xbee_cmd_send(request);
+	      }
+      }
+      else if(option == 50) { /* 2 */
+        // Additionnal XBee settings
+        printf("\n Setting additional radio settings: ZS ");
+        xbee_cmd_simple(&xdev, "ZS", XBEE_PARAM_ZS);
+        printf("NJ ");
+        xbee_cmd_simple(&xdev, "NJ", XBEE_PARAM_NJ);
+        printf("NH ");
+        xbee_cmd_simple(&xdev, "NH", XBEE_PARAM_NH);
+        printf("NO ");
+        xbee_cmd_simple(&xdev, "NO", XBEE_PARAM_NO);
+        printf("EE ");
+        xbee_cmd_simple(&xdev, "EE", XBEE_PARAM_EE);
+        printf("EO ");
+        xbee_cmd_simple(&xdev, "EO", XBEE_PARAM_EO);
+        printf("AP ");
+        xbee_cmd_simple(&xdev, "AP", XBEE_PARAM_AP);
+        printf("KY ");
+        xbee_cmd_execute(&xdev, "KY", XBEE_PARAM_KY, (sizeof(XBEE_PARAM_KY)-1) / sizeof(char));
+        printf("WR ");
+        xbee_cmd_execute(&xdev, "WR", NULL, 0);
+        printf("Done!\n\n");
       }
       else if(option == 98 || option == 66) { /* b || B */
         sys_app_banner();
       }
       else if(option == 104 || option == 72) { /* h || H */
-        puts("Woohoooo!");
 
       }
       else {
-        puts("---------------------");
-        puts("|      H E L P      |");
-        puts("---------------------");
-        puts("1 - Print active PAN");
-        puts("0 - Leave network");
+        puts("-------------------------------------");
+        puts("|              H E L P              |");
+        puts("-------------------------------------");
+        puts("[1] - Print Operating PAN ID");
+        puts("[2] - Init additional radio settings");
+        puts("[0] - Leave network (NOT IMPLEMENTED)");
         puts("");
       }
       printf("> ");
