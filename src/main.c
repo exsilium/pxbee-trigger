@@ -325,8 +325,9 @@ void relayTimer_irq(void)
 }
 #endif
 
-/* Global for the ZDO state keeping */
+/* Global for the ZDO/ZCL state keeping */
 wpan_ep_state_t zdo_ep_state;
+wpan_ep_state_t custom_ha_ep_state;
 
 void main(void)
 {
