@@ -268,7 +268,7 @@ int custom_ep_rx_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
            */
           response.header.command = ZCL_CMD_REPORT_ATTRIB;
           response.header.sequence++;
-          response.header.u.std.frame_control = 0x08;
+          response.header.u.std.frame_control = ZCL_FRAME_TYPE_PROFILE | ZCL_FRAME_SERVER_TO_CLIENT;
 
           start_response = (uint8_t *)&response + 2;
           end_response = response.buffer;
@@ -297,7 +297,7 @@ int custom_ep_rx_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
 
       response.header.command = ZCL_CMD_REPORT_ATTRIB;
       response.header.sequence++;
-      response.header.u.std.frame_control = 0x08;
+      response.header.u.std.frame_control = ZCL_FRAME_TYPE_PROFILE | ZCL_FRAME_SERVER_TO_CLIENT;
 
       start_response = (uint8_t *)&response + 2;
       end_response = response.buffer;
