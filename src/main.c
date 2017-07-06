@@ -262,6 +262,26 @@ int custom_ep_rx_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
         case 0x01:
           printf("Turn on command received\n");
           trigger();
+
+          /* We NEED to report back the On state before going back to Off state.
+           * if we don't, the SmartThings GUI will stay in "TurningOn" state
+           */
+          response.header.command = ZCL_CMD_REPORT_ATTRIB;
+          response.header.sequence++;
+          response.header.u.std.frame_control = 0x08;
+
+          start_response = (uint8_t *)&response + 2;
+          end_response = response.buffer;
+
+          *end_response++ = 0x00;
+          *end_response++ = 0x00;
+          *end_response++ = ZCL_TYPE_LOGICAL_BOOLEAN;
+          *end_response++ = 0x01; // Report On state
+
+          printf("Response length: %02X\n", end_response - start_response);
+          if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
+            printf("On response sent successfully\n");
+          }
           break;
 
         case 0x02:
@@ -273,24 +293,11 @@ int custom_ep_rx_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
           break;
       }
 
-      // Send back response (not sure we should, we get back ZCL_STATUS_UNSUP_CLUSTER_COMMAND)
-      /*response.header.command = ZCL_CMD_DEFAULT_RESP;
-
-      end_response = response.buffer;
-
-      *end_response++ = zcl.command;
-      *end_response++ = 0x00; // Success
-
-      start_response = (uint8_t *)&response + zcl_build_header(&response.header, &zcl);
-
-      printf("Response length: %02X\n", end_response - start_response);
-      if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
-        printf("Response sent successfully\n");
-      }*/
+      delay_ticks(HZ); // wait for 1 second prior to reporting Off state
 
       response.header.command = ZCL_CMD_REPORT_ATTRIB;
       response.header.sequence++;
-      response.header.u.std.frame_control = 0x0C;
+      response.header.u.std.frame_control = 0x08;
 
       start_response = (uint8_t *)&response + 2;
       end_response = response.buffer;
@@ -302,7 +309,7 @@ int custom_ep_rx_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
 
       printf("Response length: %02X\n", end_response - start_response);
       if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
-        printf("Response sent successfully\n");
+        printf("Off response sent successfully\n");
       }
 
     }
