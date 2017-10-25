@@ -30,7 +30,7 @@ Programmable XBee Trigger that is ZigBee Home Automation profile compliant. The 
 
 ## Trigger
 
-Send a ZCL "On" command to trigger the connected relay for 125ms. The state of the switch remains in "Off" state.
+Send a Unicast ZCL "On" command to trigger the connected relay for 125ms. The state of the switch remains in "Off" state. Broadcast command is ignored by default.
 
 ```
 Endpoint: 0xEA,
