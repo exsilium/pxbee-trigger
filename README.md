@@ -1,5 +1,7 @@
 # pxbee-trigger
 
+Programmable XBee Trigger that is ZigBee Home Automation profile compliant. The testing of this feature branch is carried out using [SmartThings](https://www.smartthings.com) Hub and a default ZigBee device handler.
+
 ## Bill of Materials
 
 |  Component    | Manufacturer  | Quantity | SKU / Part nr. | Mandatory / Optional |
@@ -28,12 +30,11 @@
 
 ## Trigger
 
-Send the following Explicit Addressing Command Frame to trigger the connected relay for 125ms:
+Send a Unicast ZCL "On" command to trigger the connected relay for 125ms. The state of the switch remains in "Off" state. Broadcast command is ignored by default.
 
 ```
-sourceEndpoint: 0xE8,
-destinationEndpoint: 0xEA,
+Endpoint: 0xEA,
 clusterId: 0x0006,
-profileId: 0xEAA4,
-data: 0x03
+profileId: 0x0104,
+command: 0x01
 ```

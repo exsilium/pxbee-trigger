@@ -9,10 +9,10 @@
 #define __XBEE_CONFIG_H_
 
 /* Project definitions */
-#define APP_VERSION_STRING              "Trigger v0.0.1"
+#define APP_VERSION_STRING              "Trigger v0.1.0"
 #define CONFIG_XBEE_ZB
 #define CONFIG_XBEE_THT
-#define CONFIG_XBEE_S2B
+#define CONFIG_XBEE_S2CTH
 #define CONFIG_XBEE_FLASH_LEN           32
 
 /* system0 component */
@@ -59,6 +59,7 @@
 
 /* xbee_config0 component */
 //#define XBEE_ATCMD_PARAM_ID             "0123456789ABCDEF"
+#define XBEE_ATCMD_PARAM_SC             0x7FFF
 #define XBEE_ATCMD_PARAM_NI             "PROGRAMMABLE TEST 1"
 
 /* GROVE LED component on the XBee Carrier (I2C socket) */
