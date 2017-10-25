@@ -15,6 +15,9 @@
 #define XBEE_PARAM_EE       1
 #define XBEE_PARAM_EO       1
 #define XBEE_PARAM_KY       "5A6967426565416C6C69616E63653039"
+
+/* Ignore On command received via Broadcast message */
+#define PXBEE_TRIGGER_IGNORE_BROADCAST
  
 #include <zigbee/zdo.h>
 

@@ -260,8 +260,20 @@ int custom_ep_rx_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
           break;
 
         case 0x01:
-          printf("Turn on command received\n");
-          trigger();
+          printf("Turn on command received, ");
+
+          #ifdef PXBEE_TRIGGER_IGNORE_BROADCAST
+            if(envelope->options & WPAN_ENVELOPE_BROADCAST_ADDR) {
+              printf("ignoring due to command sent as broadcast!\n");
+            }
+            else {
+              printf("executing!\n");
+              trigger();
+            }
+          #else
+            printf("executing!\n");
+            trigger();
+          #endif
 
           /* We NEED to report back the On state before going back to Off state.
            * if we don't, the SmartThings GUI will stay in "TurningOn" state
