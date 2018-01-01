@@ -11,7 +11,7 @@
 #define XBEE_PARAM_NJ       0x5A
 #define XBEE_PARAM_NH       0x1E
 #define XBEE_PARAM_NO       3
-#define XBEE_PARAM_AP       2
+#define XBEE_PARAM_AP       1
 #define XBEE_PARAM_EE       1
 #define XBEE_PARAM_EO       1
 #define XBEE_PARAM_KY       "5A6967426565416C6C69616E63653039"
