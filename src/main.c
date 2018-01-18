@@ -52,27 +52,33 @@
  *
  ************************************/
 
-
 #include <xbee_config.h>
 #include <types.h>
+#include <util.h>
 
 // Custom profile and cluster implementation
-#define CUSTOM_EP_NULL_CLUSTER    0x0000
-#define CUSTOM_EP_CUSTOM_CLUSTER  0x0006
+#define CUSTOM_EP_BASIC_CLUSTER    0x0000
+#define CUSTOM_EP_IDENTIFY_CLUSTER 0x0003 /* Not implemented */
+#define CUSTOM_EP_GROUPS_CLUSTER   0x0004 /* Not implemented */
+#define CUSTOM_EP_SCENES_CLUSTER   0x0005 /* Not implemented */
+#define CUSTOM_EP_ONOFF_CLUSTER    0x0006
 
 zcl_command_t zcl;
 
 int trigger(void);
-int custom_ep_rx_cluster(const wpan_envelope_t FAR *envelope, void FAR *context);
+int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *context);
+int custom_ep_rx_notimpl_cluster(const wpan_envelope_t FAR *envelope, void FAR *context);
 
 const wpan_cluster_table_entry_t custom_ep_clusters[] = {
-    {CUSTOM_EP_NULL_CLUSTER, NULL, NULL, WPAN_CLUST_FLAG_INPUT},
-    {CUSTOM_EP_CUSTOM_CLUSTER, custom_ep_rx_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
+    {CUSTOM_EP_BASIC_CLUSTER, NULL, NULL, WPAN_CLUST_FLAG_INPUT},
+    {CUSTOM_EP_IDENTIFY_CLUSTER, custom_ep_rx_notimpl_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
+    {CUSTOM_EP_GROUPS_CLUSTER, custom_ep_rx_notimpl_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
+    {CUSTOM_EP_SCENES_CLUSTER, custom_ep_rx_notimpl_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
+    {CUSTOM_EP_ONOFF_CLUSTER, custom_ep_rx_on_off_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
     WPAN_CLUST_ENTRY_LIST_END
 };
 
-
-int custom_ep_default_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
+int custom_ep_basic_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
 {
   uint8_t *payload_pointer = envelope->payload;
   int i = 0;
@@ -141,12 +147,7 @@ int custom_ep_default_cluster(const wpan_envelope_t FAR *envelope, void FAR *con
           *end_response++ = 0x00;
           *end_response++ = ZCL_STATUS_SUCCESS;
           *end_response++ = 0x42;
-          *end_response++ = 0x05; // Length of data
-          *end_response++ = 'P';
-          *end_response++ = 'X';
-          *end_response++ = 'B';
-          *end_response++ = 'e';
-          *end_response++ = 'e';
+          end_response = appendStringChar(end_response, ZCL_MANUFACTURER);
 
           printf("Response length: %02X\n", end_response - start_response);
           if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
@@ -160,14 +161,7 @@ int custom_ep_default_cluster(const wpan_envelope_t FAR *envelope, void FAR *con
           *end_response++ = 0x00;
           *end_response++ = ZCL_STATUS_SUCCESS;
           *end_response++ = 0x42;
-          *end_response++ = 0x07; // Length of data
-          *end_response++ = 'T';
-          *end_response++ = 'r';
-          *end_response++ = 'i';
-          *end_response++ = 'g';
-          *end_response++ = 'g';
-          *end_response++ = 'e';
-          *end_response++ = 'r';
+          end_response = appendStringChar(end_response, ZCL_MODEL);
 
           printf("Response length: %02X\n", end_response - start_response);
           if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
@@ -186,7 +180,7 @@ int custom_ep_default_cluster(const wpan_envelope_t FAR *envelope, void FAR *con
   return 0;
 }
 
-int custom_ep_rx_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
+int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
 {
   uint8_t                 *start_response;
   uint8_t									*end_response;
@@ -330,6 +324,31 @@ int custom_ep_rx_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
     printf("Error!\n");
   }
 
+  return 0;
+}
+
+int custom_ep_rx_notimpl_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
+{
+  uint8_t                 *start_response;
+  uint8_t									*end_response;
+  PACKED_STRUCT {
+    zcl_header_response_t	header;
+    uint8_t								buffer[20];
+  } response;
+
+  printf("\nNOTIMPL CLUSTER HANDLER\n");
+  printf("=======================\n");
+  printf("\n\nBuilding ZCL Command based on received envelope: ");
+  if(zcl_command_build(&zcl, envelope, context) == 0) {
+    printf("OK!\n");
+    printf("----------------------\n");
+    printf("Frame Control: %02X\n", zcl.frame_control);
+    printf("Command: %02X\n", zcl.command);
+    printf("ZCL Payload length: %02X\n", zcl.length);
+    hex_dump(zcl.zcl_payload, zcl.length, HEX_DUMP_FLAG_TAB);
+    printf("----------------------\n");
+    zcl_envelope_payload_dump(envelope);
+  }
   return 0;
 }
 // END: Custom profile and cluster implementation

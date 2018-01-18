@@ -1,6 +1,6 @@
 # pxbee-trigger
 
-Programmable XBee Trigger that is ZigBee Home Automation profile compliant. The testing of this feature branch is carried out using [SmartThings](https://www.smartthings.com) Hub and a default ZigBee device handler.
+Programmable XBee Trigger that is ZigBee Home Automation profile compliant. The testing of this feature is carried out using [SmartThings](https://www.smartthings.com) Hub and a default ZigBee device handler.
 
 ## Bill of Materials
 
@@ -38,3 +38,25 @@ clusterId: 0x0006,
 profileId: 0x0104,
 command: 0x01
 ```
+
+## Settings
+
+The following defines can be altered in `custom.h` prior to compilation to change the behavior how the Trigger works:
+
+|  Name | Description | Default |
+| ------| ----------- | ------- |
+| `PXBEE_TRIGGER_IGNORE_BROADCAST` | When enabled, ignores broadcast commands and reacts only when unicast messages are sent to the specific address (ignores All On/All Off commands). | Enabled |
+
+## License
+
+This project is based on [exsilium/pxbee-blink-led](https://github.com/exsilium/pxbee-blink-led) boilerplate and includes the full [Digi](http://www.digi.com) XBee SDK version 1.6.0 sources.
+
+Includes the necessary build binaries:
+```
+HI-CROSS+ ANSI-C Compiler for HC08 V-5.0.39, Dec 13 2011
+HI-CROSS+ SmartLinker V-5.0.48, Dec 13 2011
+HI-CROSS+ Burner V-5.0.16, Dec 13 2011
+(c) Copyright Freescale 1987-2010
+```
+
+If not otherwise noted, the added code is [BSD licensed](LICENSE).

@@ -78,9 +78,13 @@ all:	start cpu drivers misc pan link burn
 
 start:	$(OUTPUT) \
 	$(OUTPUT)/start08.o \
+	$(OUTPUT)/util.o \
 	$(OUTPUT)/main.o
 
 $(OUTPUT)/start08.o: ./src/start08.c
+	$(CC) $(CFLAGS) -ObjN="$@" -Lm="$@.d" -LmCfg=xilmou $<
+
+$(OUTPUT)/util.o: ./src/util.c
 	$(CC) $(CFLAGS) -ObjN="$@" -Lm="$@.d" -LmCfg=xilmou $<
 
 $(OUTPUT)/main.o: ./src/main.c
@@ -283,6 +287,7 @@ link:
 	"$(OUTPUT)/pan/zigbee/zigbee_zcl.o" \
 	"$(OUTPUT)/pan/zigbee/zigbee_zdo.o" \
 	"$(OUTPUT)/start08.o" \
+	"$(OUTPUT)/util.o" \
 	"$(OUTPUT)/main.o" \
 	"$(HC08C)/lib/$(HC08C_LIB)"\) \
 	-O"$(OUTPUT)/$(APP_NAME).abs"
