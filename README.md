@@ -46,6 +46,8 @@ The following defines can be altered in `custom.h` prior to compilation to chang
 |  Name | Description | Default |
 | ------| ----------- | ------- |
 | `PXBEE_TRIGGER_IGNORE_BROADCAST` | When enabled, ignores broadcast commands and reacts only when unicast messages are sent to the specific address (ignores All On/All Off commands). | Enabled |
+| `ZCL_MANUFACTURER` | The reported manufacturer string. For SmartThings local execution support without custom device handler, set this to "Leviton". | "PXBee" |
+| `ZCL_MODEL` | The reported model string. For SmartThings local execution support without custom device handler, set this to "ZSS-10". | "Trigger" |
 
 ## License
 

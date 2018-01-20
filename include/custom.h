@@ -16,7 +16,12 @@
 #define XBEE_PARAM_EO       1
 #define XBEE_PARAM_KY       "5A6967426565416C6C69616E63653039"
 
-/* Reported manufacturer and model in basic cluster */
+/* Reported manufacturer and model in basic cluster
+ *
+ * For SmartThings local execution without custom device handler, set the following:
+ * - ZCL_MANUFACTURER "Leviton"
+ * - ZCL_MODEL        "ZSS-10"
+ */
 #define ZCL_MANUFACTURER    "PXBee"
 #define ZCL_MODEL           "Trigger"
 
