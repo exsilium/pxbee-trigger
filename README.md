@@ -25,7 +25,7 @@ Programmable XBee Trigger that is ZigBee Home Automation profile compliant. The 
 ## Firmware
 
 - Output file: `obj/trigger.abs.bin`
-- Upload the file via local XMODEM or use Over-the-air upgrade if the current firmware supports it
+- Upload the file via local XMODEM or use Over-the-air upgrade if the current firmware supports it (you can use [pxbee-fwup.js](https://github.com/exsilium/pxbee-fwup.js))
 - See further [Programmable XBee documentation](http://xbee-sdk-doc.readthedocs.io)
 
 ## Trigger
