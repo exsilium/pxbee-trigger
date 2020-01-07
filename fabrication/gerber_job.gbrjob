@@ -1,0 +1,24 @@
+{
+    "Header": {
+        "Comment": "All values are metric (mm)",
+        "CreationDate": "2019-12-28T21:15:04Z",
+        "GenerationSoftware": {
+            "Application": "EAGLE",
+            "Vendor": "Autodesk",
+            "Version": "9.5.2"
+        },
+        "Part": "Single"
+    },
+    "Overall": {
+        "BoardThickness": 1.57,
+        "LayerNumber": 2,
+        "Name": {
+            "ProjectId": "pxbee-trigger"
+        },
+        "Owner": "Sten Feldman <exile@chamber.ee>",
+        "Size": {
+            "X": 61.595,
+            "Y": 96.266
+        }
+    }
+}
