@@ -1631,17 +1631,6 @@ Improvements to the package by Sten Feldman:
 <label x="218.44" y="35.56" size="1.778" layer="95" rot="R90"/>
 </segment>
 </net>
-<net name="DIO0" class="0">
-<segment>
-<wire x1="40.64" y1="45.72" x2="40.64" y2="58.42" width="0.1524" layer="91"/>
-<label x="40.64" y="45.72" size="1.778" layer="95" rot="R90"/>
-<pinref part="J2" gate="G$1" pin="2"/>
-</segment>
-<segment>
-<pinref part="XB1" gate="G$1" pin="AD0/DIO0"/>
-<wire x1="60.96" y1="139.7" x2="60.96" y2="129.54" width="0.1524" layer="91"/>
-</segment>
-</net>
 <net name="N$2" class="0">
 <segment>
 <pinref part="R2" gate="G$1" pin="1"/>
@@ -1747,6 +1736,18 @@ Improvements to the package by Sten Feldman:
 <pinref part="BR1" gate="G$1" pin="~_2"/>
 <wire x1="15.24" y1="50.8" x2="15.24" y2="45.72" width="0.1524" layer="91"/>
 <pinref part="J1" gate="G$1" pin="1"/>
+</segment>
+</net>
+<net name="DIO12" class="0">
+<segment>
+<wire x1="40.64" y1="45.72" x2="40.64" y2="58.42" width="0.1524" layer="91"/>
+<label x="40.64" y="45.72" size="1.778" layer="95" rot="R90"/>
+<pinref part="J2" gate="G$1" pin="2"/>
+</segment>
+<segment>
+<pinref part="XB1" gate="G$1" pin="DIO12"/>
+<wire x1="20.32" y1="139.7" x2="20.32" y2="129.54" width="0.1524" layer="91"/>
+<label x="17.78" y="127" size="1.778" layer="95"/>
 </segment>
 </net>
 </nets>
