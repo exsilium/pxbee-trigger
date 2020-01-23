@@ -276,31 +276,32 @@ DIN A4, landscape with location and doc. field</description>
 <wire x1="6.95" y1="-3.9" x2="-3.45" y2="-3.9" width="0.1" layer="51"/>
 <wire x1="-3.45" y1="-3.9" x2="-3.45" y2="5" width="0.1" layer="51"/>
 </package>
-<package name="395011008">
-<description>&lt;b&gt;39501-1008-2&lt;/b&gt;&lt;br&gt;
+<package name="SHDR9W80P0X350_1X9_3290X690X96">
+<description>&lt;b&gt;HEADER 1X9&lt;/b&gt;&lt;br&gt;
 </description>
-<pad name="1" x="0" y="0" drill="1.3" diameter="1.95"/>
-<pad name="2" x="3.5" y="0" drill="1.3" diameter="1.95"/>
-<pad name="3" x="7" y="0" drill="1.3" diameter="1.95"/>
-<pad name="4" x="10.5" y="0" drill="1.3" diameter="1.95"/>
-<pad name="5" x="14" y="0" drill="1.3" diameter="1.95"/>
-<pad name="6" x="17.5" y="0" drill="1.3" diameter="1.95"/>
-<pad name="7" x="21" y="0" drill="1.3" diameter="1.95"/>
-<pad name="8" x="24.5" y="0" drill="1.3" diameter="1.95"/>
-<text x="12.25" y="0.55" size="1.27" layer="25" align="center">&gt;NAME</text>
-<text x="12.25" y="0.55" size="1.27" layer="27" align="center">&gt;VALUE</text>
-<wire x1="-2.45" y1="4" x2="26.95" y2="4" width="0.2" layer="51"/>
-<wire x1="26.95" y1="4" x2="26.95" y2="-2.9" width="0.2" layer="51"/>
-<wire x1="26.95" y1="-2.9" x2="-2.45" y2="-2.9" width="0.2" layer="51"/>
-<wire x1="-2.45" y1="-2.9" x2="-2.45" y2="4" width="0.2" layer="51"/>
-<wire x1="-2.45" y1="4" x2="26.95" y2="4" width="0.1" layer="21"/>
-<wire x1="26.95" y1="4" x2="26.95" y2="-2.9" width="0.1" layer="21"/>
-<wire x1="26.95" y1="-2.9" x2="-2.45" y2="-2.9" width="0.1" layer="21"/>
-<wire x1="-2.45" y1="-2.9" x2="-2.45" y2="4" width="0.1" layer="21"/>
-<wire x1="-3.45" y1="5" x2="27.95" y2="5" width="0.1" layer="51"/>
-<wire x1="27.95" y1="5" x2="27.95" y2="-3.9" width="0.1" layer="51"/>
-<wire x1="27.95" y1="-3.9" x2="-3.45" y2="-3.9" width="0.1" layer="51"/>
-<wire x1="-3.45" y1="-3.9" x2="-3.45" y2="5" width="0.1" layer="51"/>
+<pad name="1" x="0" y="0" drill="1.35" diameter="2.025" shape="square"/>
+<pad name="2" x="3.5" y="0" drill="1.35" diameter="2.025"/>
+<pad name="3" x="7" y="0" drill="1.35" diameter="2.025"/>
+<pad name="4" x="10.5" y="0" drill="1.35" diameter="2.025"/>
+<pad name="5" x="14" y="0" drill="1.35" diameter="2.025"/>
+<pad name="6" x="17.5" y="0" drill="1.35" diameter="2.025"/>
+<pad name="7" x="21" y="0" drill="1.35" diameter="2.025"/>
+<pad name="8" x="24.5" y="0" drill="1.35" diameter="2.025"/>
+<pad name="9" x="28" y="0" drill="1.35" diameter="2.025"/>
+<text x="0" y="0" size="1.27" layer="25" align="center">&gt;NAME</text>
+<text x="0" y="0" size="1.27" layer="27" align="center">&gt;VALUE</text>
+<wire x1="-2.75" y1="-3.4" x2="-2.75" y2="4.4" width="0.05" layer="51"/>
+<wire x1="-2.75" y1="4.4" x2="31.15" y2="4.4" width="0.05" layer="51"/>
+<wire x1="31.15" y1="4.4" x2="31.15" y2="-3.4" width="0.05" layer="51"/>
+<wire x1="31.15" y1="-3.4" x2="-2.75" y2="-3.4" width="0.05" layer="51"/>
+<wire x1="-2.5" y1="-3.15" x2="-2.5" y2="4.15" width="0.1" layer="51"/>
+<wire x1="-2.5" y1="4.15" x2="30.9" y2="4.15" width="0.1" layer="51"/>
+<wire x1="30.9" y1="4.15" x2="30.9" y2="-3.15" width="0.1" layer="51"/>
+<wire x1="30.9" y1="-3.15" x2="-2.5" y2="-3.15" width="0.1" layer="51"/>
+<wire x1="0" y1="-3.15" x2="30.9" y2="-3.15" width="0.2" layer="21"/>
+<wire x1="30.9" y1="-3.15" x2="30.9" y2="4.15" width="0.2" layer="21"/>
+<wire x1="30.9" y1="4.15" x2="-2.5" y2="4.15" width="0.2" layer="21"/>
+<wire x1="-2.5" y1="4.15" x2="-2.5" y2="0" width="0.2" layer="21"/>
 </package>
 </packages>
 <symbols>
@@ -389,11 +390,11 @@ DIN A4, landscape with location and doc. field</description>
 <pin name="1" x="0" y="0" length="middle"/>
 <pin name="2" x="0" y="-2.54" length="middle"/>
 </symbol>
-<symbol name="39501-1008">
+<symbol name="39501-1009">
 <wire x1="5.08" y1="2.54" x2="15.24" y2="2.54" width="0.254" layer="94"/>
-<wire x1="15.24" y1="-20.32" x2="15.24" y2="2.54" width="0.254" layer="94"/>
-<wire x1="15.24" y1="-20.32" x2="5.08" y2="-20.32" width="0.254" layer="94"/>
-<wire x1="5.08" y1="2.54" x2="5.08" y2="-20.32" width="0.254" layer="94"/>
+<wire x1="15.24" y1="-22.86" x2="15.24" y2="2.54" width="0.254" layer="94"/>
+<wire x1="15.24" y1="-22.86" x2="5.08" y2="-22.86" width="0.254" layer="94"/>
+<wire x1="5.08" y1="2.54" x2="5.08" y2="-22.86" width="0.254" layer="94"/>
 <text x="16.51" y="7.62" size="1.778" layer="95" align="center-left">&gt;NAME</text>
 <text x="16.51" y="5.08" size="1.778" layer="96" align="center-left">&gt;VALUE</text>
 <pin name="1" x="0" y="0" length="middle"/>
@@ -404,6 +405,7 @@ DIN A4, landscape with location and doc. field</description>
 <pin name="6" x="0" y="-12.7" length="middle"/>
 <pin name="7" x="0" y="-15.24" length="middle"/>
 <pin name="8" x="0" y="-17.78" length="middle"/>
+<pin name="9" x="0" y="-20.32" length="middle"/>
 </symbol>
 </symbols>
 <devicesets>
@@ -607,14 +609,14 @@ Source: &lt;a href="https://mouser.componentsearchengine.com/Datasheets/2/39501-
 </device>
 </devices>
 </deviceset>
-<deviceset name="39501-1008" prefix="J">
-<description>&lt;b&gt;Pluggable Terminal Blocks EURO 3.5MM 8 CIRCUIT VERT PCB HEADER&lt;/b&gt;&lt;p&gt;
-Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/39501-1008.pdf"&gt; Datasheet &lt;/a&gt;</description>
+<deviceset name="39501-1009" prefix="J">
+<description>&lt;b&gt;Pluggable Terminal Blocks EURO 3.5MM 9 CIRCUIT VERT PCB HEADER&lt;/b&gt;&lt;p&gt;
+Source: &lt;a href="https://www.molex.com/pdm_docs/sd/395011009_sd.pdf"&gt; Datasheet &lt;/a&gt;</description>
 <gates>
-<gate name="G$1" symbol="39501-1008" x="0" y="0"/>
+<gate name="G$1" symbol="39501-1009" x="0" y="0"/>
 </gates>
 <devices>
-<device name="" package="395011008">
+<device name="" package="SHDR9W80P0X350_1X9_3290X690X96">
 <connects>
 <connect gate="G$1" pin="1" pad="1"/>
 <connect gate="G$1" pin="2" pad="2"/>
@@ -624,17 +626,16 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/39501-1008.pd
 <connect gate="G$1" pin="6" pad="6"/>
 <connect gate="G$1" pin="7" pad="7"/>
 <connect gate="G$1" pin="8" pad="8"/>
+<connect gate="G$1" pin="9" pad="9"/>
 </connects>
 <technologies>
 <technology name="">
-<attribute name="ALLIED_NUMBER" value="71457797" constant="no"/>
-<attribute name="ALLIED_PRICE-STOCK" value="https://www.alliedelec.com/molexincorporated-39501-1008/71457797/" constant="no"/>
-<attribute name="DESCRIPTION" value="Pluggable Terminal Blocks EURO 3.5MM 8 CIRCUIT VERT PCB HEADER" constant="no"/>
-<attribute name="HEIGHT" value="9.2mm" constant="no"/>
+<attribute name="DESCRIPTION" value="Pluggable Terminal Blocks EURO 3.5MM 9 CIRCUIT VERT PCB HEADER" constant="no"/>
+<attribute name="HEIGHT" value="9.6mm" constant="no"/>
 <attribute name="MANUFACTURER_NAME" value="Molex" constant="no"/>
-<attribute name="MANUFACTURER_PART_NUMBER" value="39501-1008" constant="no"/>
-<attribute name="MOUSER_PART_NUMBER" value="538-39501-1008" constant="no"/>
-<attribute name="MOUSER_PRICE-STOCK" value="https://www.mouser.com/Search/Refine.aspx?Keyword=538-39501-1008" constant="no"/>
+<attribute name="MANUFACTURER_PART_NUMBER" value="39501-1009" constant="no"/>
+<attribute name="MOUSER_PART_NUMBER" value="538-39501-1009" constant="no"/>
+<attribute name="MOUSER_PRICE-STOCK" value="https://www.mouser.com/Search/Refine.aspx?Keyword=538-39501-1009" constant="no"/>
 <attribute name="RS_PART_NUMBER" value="" constant="no"/>
 <attribute name="RS_PRICE-STOCK" value="" constant="no"/>
 </technology>
@@ -1336,7 +1337,7 @@ Improvements to the package by Sten Feldman:
 <part name="D4" library="parts" deviceset="1N4004RLG" device=""/>
 <part name="R4" library="parts" deviceset="RN55D1801FB14" device=""/>
 <part name="J1" library="parts" deviceset="39501-1002" device=""/>
-<part name="J2" library="parts" deviceset="39501-1008" device=""/>
+<part name="J2" library="parts" deviceset="39501-1009" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -1428,9 +1429,9 @@ Improvements to the package by Sten Feldman:
 <attribute name="NAME" x="17.78" y="29.21" size="1.778" layer="95" rot="R270" align="center-left"/>
 <attribute name="VALUE" x="15.24" y="29.21" size="1.778" layer="96" rot="R270" align="center-left"/>
 </instance>
-<instance part="J2" gate="G$1" x="43.18" y="45.72" smashed="yes" rot="R270">
-<attribute name="NAME" x="45.72" y="29.21" size="1.778" layer="95" rot="R270" align="center-left"/>
-<attribute name="VALUE" x="43.18" y="29.21" size="1.778" layer="96" rot="R270" align="center-left"/>
+<instance part="J2" gate="G$1" x="45.72" y="45.72" smashed="yes" rot="R270">
+<attribute name="NAME" x="48.26" y="29.21" size="1.778" layer="95" rot="R270" align="center-left"/>
+<attribute name="VALUE" x="45.72" y="29.21" size="1.778" layer="96" rot="R270" align="center-left"/>
 </instance>
 </instances>
 <busses>
@@ -1471,9 +1472,9 @@ Improvements to the package by Sten Feldman:
 <label x="200.66" y="88.9" size="1.778" layer="95" rot="R180"/>
 </segment>
 <segment>
-<wire x1="43.18" y1="45.72" x2="43.18" y2="58.42" width="0.1524" layer="91"/>
-<label x="43.18" y="50.8" size="1.778" layer="95" rot="R90"/>
 <pinref part="J2" gate="G$1" pin="1"/>
+<wire x1="45.72" y1="45.72" x2="45.72" y2="58.42" width="0.1524" layer="91"/>
+<label x="45.72" y="45.72" size="1.778" layer="95" rot="R90"/>
 </segment>
 </net>
 <net name="N$3" class="0">
@@ -1549,7 +1550,7 @@ Improvements to the package by Sten Feldman:
 <segment>
 <wire x1="38.1" y1="45.72" x2="38.1" y2="58.42" width="0.1524" layer="91"/>
 <label x="38.1" y="45.72" size="1.778" layer="95" rot="R90"/>
-<pinref part="J2" gate="G$1" pin="3"/>
+<pinref part="J2" gate="G$1" pin="4"/>
 </segment>
 <segment>
 <pinref part="K1" gate="G$1" pin="COM"/>
@@ -1566,7 +1567,7 @@ Improvements to the package by Sten Feldman:
 <segment>
 <wire x1="35.56" y1="45.72" x2="35.56" y2="58.42" width="0.1524" layer="91"/>
 <label x="35.56" y="45.72" size="1.778" layer="95" rot="R90"/>
-<pinref part="J2" gate="G$1" pin="4"/>
+<pinref part="J2" gate="G$1" pin="5"/>
 </segment>
 <segment>
 <pinref part="K1" gate="G$1" pin="NO"/>
@@ -1579,7 +1580,7 @@ Improvements to the package by Sten Feldman:
 <segment>
 <wire x1="33.02" y1="45.72" x2="33.02" y2="58.42" width="0.1524" layer="91"/>
 <label x="31.242" y="52.07" size="1.778" layer="95" rot="R270"/>
-<pinref part="J2" gate="G$1" pin="5"/>
+<pinref part="J2" gate="G$1" pin="6"/>
 </segment>
 <segment>
 <pinref part="K2" gate="G$1" pin="NO"/>
@@ -1592,7 +1593,7 @@ Improvements to the package by Sten Feldman:
 <segment>
 <wire x1="30.48" y1="45.72" x2="30.48" y2="58.42" width="0.1524" layer="91"/>
 <label x="30.48" y="45.72" size="1.778" layer="95" rot="R90"/>
-<pinref part="J2" gate="G$1" pin="6"/>
+<pinref part="J2" gate="G$1" pin="7"/>
 </segment>
 <segment>
 <pinref part="K3" gate="G$1" pin="COM"/>
@@ -1609,7 +1610,7 @@ Improvements to the package by Sten Feldman:
 <segment>
 <wire x1="27.94" y1="45.72" x2="27.94" y2="58.42" width="0.1524" layer="91"/>
 <label x="26.162" y="52.07" size="1.778" layer="95" rot="R270"/>
-<pinref part="J2" gate="G$1" pin="7"/>
+<pinref part="J2" gate="G$1" pin="8"/>
 </segment>
 <segment>
 <pinref part="K3" gate="G$1" pin="NO"/>
@@ -1622,7 +1623,7 @@ Improvements to the package by Sten Feldman:
 <segment>
 <wire x1="25.4" y1="45.72" x2="25.4" y2="58.42" width="0.1524" layer="91"/>
 <label x="23.622" y="52.07" size="1.778" layer="95" rot="R270"/>
-<pinref part="J2" gate="G$1" pin="8"/>
+<pinref part="J2" gate="G$1" pin="9"/>
 </segment>
 <segment>
 <pinref part="K4" gate="G$1" pin="NO"/>
@@ -1742,12 +1743,24 @@ Improvements to the package by Sten Feldman:
 <segment>
 <wire x1="40.64" y1="45.72" x2="40.64" y2="58.42" width="0.1524" layer="91"/>
 <label x="40.64" y="45.72" size="1.778" layer="95" rot="R90"/>
-<pinref part="J2" gate="G$1" pin="2"/>
+<pinref part="J2" gate="G$1" pin="3"/>
 </segment>
 <segment>
 <pinref part="XB1" gate="G$1" pin="DIO12"/>
 <wire x1="20.32" y1="139.7" x2="20.32" y2="129.54" width="0.1524" layer="91"/>
 <label x="17.78" y="127" size="1.778" layer="95"/>
+</segment>
+</net>
+<net name="DIO3" class="0">
+<segment>
+<pinref part="J2" gate="G$1" pin="2"/>
+<wire x1="43.18" y1="45.72" x2="43.18" y2="58.42" width="0.1524" layer="91"/>
+<label x="43.18" y="45.72" size="1.778" layer="95" rot="R90"/>
+</segment>
+<segment>
+<pinref part="XB1" gate="G$1" pin="AD3/DIO3"/>
+<wire x1="53.34" y1="139.7" x2="53.34" y2="129.54" width="0.1524" layer="91"/>
+<label x="48.26" y="127" size="1.778" layer="95"/>
 </segment>
 </net>
 </nets>
