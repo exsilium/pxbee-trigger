@@ -1,7 +1,7 @@
 {
     "Header": {
         "Comment": "All values are metric (mm)",
-        "CreationDate": "2019-12-28T21:15:04Z",
+        "CreationDate": "2020-02-04T20:31:50Z",
         "GenerationSoftware": {
             "Application": "EAGLE",
             "Vendor": "Autodesk",
@@ -17,8 +17,8 @@
         },
         "Owner": "Sten Feldman <exile@chamber.ee>",
         "Size": {
-            "X": 61.595,
-            "Y": 96.266
+            "X": 75,
+            "Y": 75
         }
     }
 }

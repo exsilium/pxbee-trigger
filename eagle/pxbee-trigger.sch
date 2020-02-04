@@ -1702,18 +1702,18 @@ Improvements to the package by Sten Feldman:
 <segment>
 <pinref part="R2" gate="G$1" pin="2"/>
 <wire x1="111.76" y1="119.38" x2="111.76" y2="111.76" width="0.1524" layer="91"/>
-<pinref part="XB1" gate="G$1" pin="AD1/DIO1"/>
-<wire x1="111.76" y1="119.38" x2="58.42" y2="119.38" width="0.1524" layer="91"/>
-<wire x1="58.42" y1="119.38" x2="58.42" y2="139.7" width="0.1524" layer="91"/>
+<wire x1="111.76" y1="119.38" x2="25.4" y2="119.38" width="0.1524" layer="91"/>
+<pinref part="XB1" gate="G$1" pin="RSSI/PWM/DIO10"/>
+<wire x1="25.4" y1="119.38" x2="25.4" y2="139.7" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$15" class="0">
 <segment>
 <pinref part="R3" gate="G$1" pin="2"/>
 <wire x1="160.02" y1="121.92" x2="160.02" y2="111.76" width="0.1524" layer="91"/>
-<pinref part="XB1" gate="G$1" pin="AD2/DIO2"/>
-<wire x1="160.02" y1="121.92" x2="55.88" y2="121.92" width="0.1524" layer="91"/>
-<wire x1="55.88" y1="121.92" x2="55.88" y2="139.7" width="0.1524" layer="91"/>
+<wire x1="160.02" y1="121.92" x2="20.32" y2="121.92" width="0.1524" layer="91"/>
+<pinref part="XB1" gate="G$1" pin="DIO12"/>
+<wire x1="20.32" y1="121.92" x2="20.32" y2="139.7" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$16" class="0">
@@ -1739,28 +1739,28 @@ Improvements to the package by Sten Feldman:
 <pinref part="J1" gate="G$1" pin="1"/>
 </segment>
 </net>
-<net name="DIO12" class="0">
+<net name="DIO2" class="0">
 <segment>
-<wire x1="40.64" y1="45.72" x2="40.64" y2="58.42" width="0.1524" layer="91"/>
-<label x="40.64" y="45.72" size="1.778" layer="95" rot="R90"/>
-<pinref part="J2" gate="G$1" pin="3"/>
+<pinref part="XB1" gate="G$1" pin="AD2/DIO2"/>
+<wire x1="55.88" y1="139.7" x2="55.88" y2="129.54" width="0.1524" layer="91"/>
+<label x="50.8" y="127" size="1.778" layer="95"/>
 </segment>
-<segment>
-<pinref part="XB1" gate="G$1" pin="DIO12"/>
-<wire x1="20.32" y1="139.7" x2="20.32" y2="129.54" width="0.1524" layer="91"/>
-<label x="17.78" y="127" size="1.778" layer="95"/>
-</segment>
-</net>
-<net name="DIO3" class="0">
 <segment>
 <pinref part="J2" gate="G$1" pin="2"/>
 <wire x1="43.18" y1="45.72" x2="43.18" y2="58.42" width="0.1524" layer="91"/>
 <label x="43.18" y="45.72" size="1.778" layer="95" rot="R90"/>
 </segment>
+</net>
+<net name="DIO1" class="0">
 <segment>
-<pinref part="XB1" gate="G$1" pin="AD3/DIO3"/>
-<wire x1="53.34" y1="139.7" x2="53.34" y2="129.54" width="0.1524" layer="91"/>
-<label x="48.26" y="127" size="1.778" layer="95"/>
+<pinref part="XB1" gate="G$1" pin="AD1/DIO1"/>
+<wire x1="58.42" y1="139.7" x2="58.42" y2="129.54" width="0.1524" layer="91"/>
+<label x="58.42" y="127" size="1.778" layer="95"/>
+</segment>
+<segment>
+<wire x1="40.64" y1="45.72" x2="40.64" y2="58.42" width="0.1524" layer="91"/>
+<label x="40.64" y="45.72" size="1.778" layer="95" rot="R90"/>
+<pinref part="J2" gate="G$1" pin="3"/>
 </segment>
 </net>
 </nets>
