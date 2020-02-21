@@ -32,23 +32,23 @@
  *   XPIN1 = VCC
  *   XPIN2 = uart0 [TX Pin]
  *   XPIN3 = uart0 [RX Pin]
- *   XPIN4 = <<UNUSED>>
+ *   XPIN4 = RELAY_3 [GPIO Pin]
  *   XPIN5 = special0 [Reset Pin]
- *   XPIN6 = special0 [RSSI PWM Pin]
- *   XPIN7 = LED [GPIO Pin]
+ *   XPIN6 = RELAY_2 [GPIO Pin] (Disabled: special0 [RSSI PWM Pin])
+ *   XPIN7 = RELAY_1
  *   XPIN8 = special0 [BKGD Pin]
  *   XPIN9 = <<UNUSED>>
  *   XPIN10 = GND
- *   XPIN11 = <<UNUSED>>
+ *   XPIN11 = RELAY_4
  *   XPIN12 = <<UNUSED>>
  *   XPIN13 = <<UNUSED>>
  *   XPIN14 = VCC REF
  *   XPIN15 = special0 [Association Pin]
- *   XPIN16 = RELAY_2 [GPIO Pin]
- *   XPIN17 = RELAY [GPIO Pin]
- *   XPIN18 = <<UNUSED>>
- *   XPIN19 = LED_GROVE
- *   XPIN20 = special0 [Commissioning Pin]
+ *   XPIN16 = <<UNUSED>>
+ *   XPIN17 = <<UNUSED>>
+ *   XPIN18 = Status pin 1 [IRQ Pin] (Pulled UP)
+ *   XPIN19 = Status pin 2 [IRQ Pin] (Pulled UP)
+ *   XPIN20 = <<UNUSED>>
  *
  ************************************/
 
@@ -62,12 +62,29 @@
 #define CUSTOM_EP_GROUPS_CLUSTER   0x0004 /* Not implemented */
 #define CUSTOM_EP_SCENES_CLUSTER   0x0005 /* Not implemented */
 #define CUSTOM_EP_ONOFF_CLUSTER    0x0006
+#define CUSTOM_EP_BIN_IN_CLUSTER   0x000f /* To be implemented? - custom_ep_rx_binary_in_cluster */
 
 zcl_command_t zcl;
+
+/* Global for the ZDO/ZCL state keeping */
+wpan_ep_state_t zdo_ep_state;
+wpan_ep_state_t custom_ha_ep_state;
+wpan_ep_state_t custom_ha_ep2_state;
+wpan_ep_state_t custom_ha_ep3_state;
+wpan_ep_state_t custom_ha_ep4_state;
+
+/* STATUS_* Pins */
+#define CONTACT_OPEN   1
+#define CONTACT_CLOSED 0
+bool_t status_1_TimerSet = FALSE;
+bool_t status_2_TimerSet = FALSE;
+bool_t status_1 = CONTACT_OPEN;
+bool_t status_2 = CONTACT_OPEN;
 
 int trigger(void);
 int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *context);
 int custom_ep_rx_notimpl_cluster(const wpan_envelope_t FAR *envelope, void FAR *context);
+int custom_ep_rx_binary_in_cluster(const wpan_envelope_t FAR *envelope, void FAR *context);
 
 const wpan_cluster_table_entry_t custom_ep_clusters[] = {
     {CUSTOM_EP_BASIC_CLUSTER, NULL, NULL, WPAN_CLUST_FLAG_INPUT},
@@ -75,7 +92,26 @@ const wpan_cluster_table_entry_t custom_ep_clusters[] = {
     {CUSTOM_EP_GROUPS_CLUSTER, custom_ep_rx_notimpl_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
     {CUSTOM_EP_SCENES_CLUSTER, custom_ep_rx_notimpl_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
     {CUSTOM_EP_ONOFF_CLUSTER, custom_ep_rx_on_off_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
+    {CUSTOM_EP_BIN_IN_CLUSTER, custom_ep_rx_notimpl_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
     WPAN_CLUST_ENTRY_LIST_END
+};
+
+const wpan_cluster_table_entry_t custom_ep2_clusters[] = {
+  {CUSTOM_EP_BASIC_CLUSTER, NULL, NULL, WPAN_CLUST_FLAG_INPUT},
+  {CUSTOM_EP_ONOFF_CLUSTER, custom_ep_rx_on_off_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
+  WPAN_CLUST_ENTRY_LIST_END
+};
+
+const wpan_cluster_table_entry_t custom_ep3_clusters[] = {
+  {CUSTOM_EP_BASIC_CLUSTER, NULL, NULL, WPAN_CLUST_FLAG_INPUT},
+  {CUSTOM_EP_ONOFF_CLUSTER, custom_ep_rx_on_off_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
+  WPAN_CLUST_ENTRY_LIST_END
+};
+
+const wpan_cluster_table_entry_t custom_ep4_clusters[] = {
+  {CUSTOM_EP_BASIC_CLUSTER, NULL, NULL, WPAN_CLUST_FLAG_INPUT},
+  {CUSTOM_EP_ONOFF_CLUSTER, custom_ep_rx_on_off_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
+  WPAN_CLUST_ENTRY_LIST_END
 };
 
 int custom_ep_basic_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
@@ -194,6 +230,10 @@ int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *c
   printf("\n\nBuilding ZCL Command based on received envelope: ");
   if(zcl_command_build(&zcl, envelope, context) == 0) {
     printf("OK!\n");
+    printf("Cluster ID          : %04X\n", envelope->cluster_id);
+    printf("Profile ID          : %04X\n", envelope->profile_id);
+    printf("Source Endpoint     : %04X\n", envelope->source_endpoint);
+    printf("Destination Endpoint: %04X\n", envelope->dest_endpoint);
     printf("----------------------\n");
     printf("Frame Control: %02X\n", zcl.frame_control);
     printf("Command: %02X\n", zcl.command);
@@ -274,7 +314,7 @@ int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *c
            */
           response.header.command = ZCL_CMD_REPORT_ATTRIB;
           response.header.sequence++;
-          response.header.u.std.frame_control = ZCL_FRAME_TYPE_PROFILE | ZCL_FRAME_SERVER_TO_CLIENT;
+          response.header.u.std.frame_control = ZCL_FRAME_TYPE_PROFILE | ZCL_FRAME_SERVER_TO_CLIENT | ZCL_FRAME_MFG_SPECIFIC;
 
           start_response = (uint8_t *)&response + 2;
           end_response = response.buffer;
@@ -303,7 +343,7 @@ int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *c
 
       response.header.command = ZCL_CMD_REPORT_ATTRIB;
       response.header.sequence++;
-      response.header.u.std.frame_control = ZCL_FRAME_TYPE_PROFILE | ZCL_FRAME_SERVER_TO_CLIENT;
+      response.header.u.std.frame_control = ZCL_FRAME_TYPE_PROFILE | ZCL_FRAME_SERVER_TO_CLIENT | ZCL_FRAME_MFG_SPECIFIC;
 
       start_response = (uint8_t *)&response + 2;
       end_response = response.buffer;
@@ -407,8 +447,7 @@ int xbee_cmd_callback( const xbee_cmd_response_t FAR *response)
 	if (length <= 4)
 	{
 		// format hex string with (2 * number of bytes in value) leading zeros
-		printf( "= 0x%0*" PRIX32 " (%" PRIu32 ")\n", length * 2, response->value,
-			response->value);
+		printf( "= 0x%0*" PRIX32 " (%" PRIu32 ")\n", length * 2, response->value, response->value);
 	}
 	else
 	{
@@ -450,9 +489,7 @@ int xbee_transparent_rx(const wpan_envelope_t FAR *envelope, void FAR *context)
 #if defined(RTC_ENABLE_PERIODIC_TASK)
 void rtc_periodic_task(void)
 {
-  gpio_set(LED, !gpio_get(LED));
-  //gpio_set(RELAY, !gpio_get(LED));
-  //gpio_set(RELAY_2, gpio_get(RELAY));
+  return;
 }
 #endif
 
@@ -460,14 +497,59 @@ void rtc_periodic_task(void)
 void relayTimer_irq(void)
 {
   puts("EVENT TRIGGERED: relayTimer_irq");
-  gpio_set(RELAY,   0);
-  gpio_set(RELAY_2, 0);
+  gpio_set(RELAY_1,   0);
 }
 #endif
 
-/* Global for the ZDO/ZCL state keeping */
-wpan_ep_state_t zdo_ep_state;
-wpan_ep_state_t custom_ha_ep_state;
+#ifdef status_1_CheckTimer_irq
+void status_1_CheckTimer_irq(void) {
+  if (gpio_get(STATUS_1)) {
+    /* State has changed back, stop the check timer */
+    status_1 = CONTACT_OPEN;
+    status_1_TimerSet = FALSE;
+    timer_enable(status_1_CheckTimer, FALSE);
+    puts("EVENT TRIGGERED: status_1_CheckTimer_irq (CONTACT_OPEN)");
+  }
+}
+#endif
+
+#ifdef status_2_CheckTimer_irq
+void status_2_CheckTimer_irq(void) {
+  if (gpio_get(STATUS_2)) {
+    /* State has changed back, stop the check timer */
+    status_2 = CONTACT_OPEN;
+    status_2_TimerSet = FALSE;
+    timer_enable(status_2_CheckTimer, FALSE);
+    puts("EVENT TRIGGERED: status_2_CheckTimer_irq (CONTACT_OPEN)");
+  }
+}
+#endif
+
+#ifdef status_1_irq
+void status_1_irq(void)
+{
+  if(!status_1_TimerSet) { 
+    if(timer_config(status_1_CheckTimer, TRUE, PERIODIC, 500000) == 0) {
+      status_1_TimerSet = TRUE;
+      status_1 = CONTACT_CLOSED;
+    }
+    puts("EVENT TRIGGERED: status_1_irq (CONTACT_CLOSED)");
+  }
+}
+#endif
+
+#ifdef status_2_irq
+void status_2_irq(void)
+{
+  if(!status_2_TimerSet) { 
+    if(timer_config(status_2_CheckTimer, TRUE, PERIODIC, 500000) == 0) {
+      status_2_TimerSet = TRUE;
+      status_2 = CONTACT_CLOSED;
+    }
+    puts("EVENT TRIGGERED: status_2_irq (CONTACT_CLOSED)");
+  }
+}
+#endif
 
 void main(void)
 {
@@ -477,23 +559,18 @@ void main(void)
   sys_xbee_init();
   sys_app_banner();
 
-  gpio_set(XPIN_19, 0);
-  gpio_set(XPIN_18, 0);
-  gpio_set(XPIN_16, 0);
-  gpio_set(XPIN_11, 0);
-  gpio_set(XPIN_7,  0);
-  gpio_set(XPIN_4,  0);
-
   // Drive special pins low
   gpio_set(XPIN_15, 0);
-  gpio_set(XPIN_20, 0);
   gpio_set(XPIN_8,  0);
   gpio_set(XPIN_6,  0);
 
-  gpio_set(RELAY,           0);
-  gpio_set(LED_GROVE,       0);
-  gpio_set(PWR_CNTRL_RELAY, 0);
-  gpio_set(PWR_CNTRL_LED,   0);
+  gpio_set(RELAY_1, 0);
+  gpio_set(RELAY_2, 0);
+  gpio_set(RELAY_3, 0);
+  gpio_set(RELAY_4, 0);
+
+  /* During startup, we should check the STATUS_* pins in case they have already been driven low  (CONTACT_CLOSED) */
+  // TODO
 
   printf("> ");
 
@@ -568,12 +645,10 @@ void main(void)
 
 int trigger(void) {
   printf("Trigger!\n");
-  gpio_set(RELAY,   0);
-  gpio_set(RELAY_2, 0);
+  gpio_set(RELAY_1, 0);
 
   if(timer_config(relayTimer, TRUE, ONE_SHOT, 125000) == 0) {
-    gpio_set(RELAY,   1);
-    gpio_set(RELAY_2, 1);
+    gpio_set(RELAY_1, 1);
     return 0;
   }
   else {
