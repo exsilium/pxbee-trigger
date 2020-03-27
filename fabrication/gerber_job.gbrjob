@@ -1,11 +1,11 @@
 {
     "Header": {
         "Comment": "All values are metric (mm)",
-        "CreationDate": "2020-02-04T20:31:50Z",
+        "CreationDate": "2020-03-27T21:07:24Z",
         "GenerationSoftware": {
             "Application": "EAGLE",
             "Vendor": "Autodesk",
-            "Version": "9.5.2"
+            "Version": "9.6.0"
         },
         "Part": "Single"
     },
@@ -17,8 +17,8 @@
         },
         "Owner": "Sten Feldman <exile@chamber.ee>",
         "Size": {
-            "X": 75,
-            "Y": 75
+            "X": 51,
+            "Y": 57
         }
     }
 }
