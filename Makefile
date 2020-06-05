@@ -34,9 +34,10 @@ APP_NAME=trigger
 
 # Toolchain and output. If you are using Docker to build, make sure the paths
 # are relative and within this directory to ensure container access.
-CC=./hc08c/bin/chc08
-LINKER=./hc08c/bin/linker
-BURNER=./hc08c/bin/burner
+WRAPINDOCKER ?=docker run -v $(CURDIR):$(CURDIR) -w=$(CURDIR) $(APP_NAME)
+CC=$(WRAPINDOCKER) ./hc08c/bin/chc08
+LINKER=$(WRAPINDOCKER) ./hc08c/bin/linker
+BURNER=$(WRAPINDOCKER) ./hc08c/bin/burner
 OUTPUT=obj
 
 PXBEE_API_SRC=./pxbee
@@ -332,7 +333,7 @@ builddocker:
 	docker build --tag=$(APP_NAME):latest .
 
 dall:
-	docker run -v $(CURDIR):/$(APP_NAME) -w=/$(APP_NAME) --rm=true $(APP_NAME)
+	docker run -v $(CURDIR):$(CURDIR) -w=$(CURDIR) --env WRAPINDOCKER="" --rm=true $(APP_NAME)
 
 ###############################################################################
 # CLEAN #######################################################################
