@@ -569,8 +569,15 @@ void main(void)
   gpio_set(RELAY_3, 0);
   gpio_set(RELAY_4, 0);
 
-  /* During startup, we should check the STATUS_* pins in case they have already been driven low  (CONTACT_CLOSED) */
-  // TODO
+  /* During startup, we should check the STATUS_* pins in case they have already been driven low (CONTACT_CLOSED) */
+  if (!gpio_get(STATUS_1)) {
+    status_1 = CONTACT_CLOSED;
+    puts("STARTUP check STATUS_1 - CONTACT_CLOSED");
+  }
+  if (!gpio_get(STATUS_2)) {
+    status_2 = CONTACT_CLOSED;
+    puts("STARTUP check STATUS_2 - CONTACT_CLOSED");
+  }
 
   printf("> ");
 
