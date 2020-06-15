@@ -1,4 +1,5 @@
 /*
+ *
  * Write here your custom declarations.
  *
  * They will be included automatically in
@@ -10,7 +11,7 @@
 #define XBEE_PARAM_ZS       2
 #define XBEE_PARAM_NJ       0xFF
 #define XBEE_PARAM_NH       0x1E
-#define XBEE_PARAM_NO       3
+#define XBEE_PARAM_NO       0
 #define XBEE_PARAM_AP       1
 #define XBEE_PARAM_EE       1
 #define XBEE_PARAM_EO       1
@@ -31,6 +32,7 @@
 /* Settings END */
  
 #include <zigbee/zdo.h>
+#include <zigbee/zcl_client.h>
 
 extern wpan_ep_state_t zdo_ep_state;
 extern wpan_ep_state_t custom_ha_ep_state;

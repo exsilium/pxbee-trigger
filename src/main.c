@@ -65,6 +65,8 @@
 #define CUSTOM_EP_BIN_IN_CLUSTER   0x000f /* To be implemented? - custom_ep_rx_binary_in_cluster */
 
 zcl_command_t zcl;
+zcl_command_t zcl_onoff;
+zcl_command_t zcl_binin;
 
 /* Global for the ZDO/ZCL state keeping */
 wpan_ep_state_t zdo_ep_state;
@@ -74,17 +76,14 @@ wpan_ep_state_t custom_ha_ep3_state;
 wpan_ep_state_t custom_ha_ep4_state;
 
 /* STATUS_* Pins */
-#define CONTACT_OPEN   1
-#define CONTACT_CLOSED 0
 bool_t status_1_TimerSet = FALSE;
 bool_t status_2_TimerSet = FALSE;
-bool_t status_1 = CONTACT_OPEN;
-bool_t status_2 = CONTACT_OPEN;
 
 int trigger(void);
+void send_status(bool_t status, const wpan_endpoint_table_entry_t *source_endpoint);
 int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *context);
 int custom_ep_rx_notimpl_cluster(const wpan_envelope_t FAR *envelope, void FAR *context);
-int custom_ep_rx_binary_in_cluster(const wpan_envelope_t FAR *envelope, void FAR *context);
+int custom_ep_rx_binary_input_cluster(const wpan_envelope_t FAR *envelope, void FAR *context);
 
 const wpan_cluster_table_entry_t custom_ep_clusters[] = {
     {CUSTOM_EP_BASIC_CLUSTER, NULL, NULL, WPAN_CLUST_FLAG_INPUT},
@@ -92,13 +91,14 @@ const wpan_cluster_table_entry_t custom_ep_clusters[] = {
     {CUSTOM_EP_GROUPS_CLUSTER, custom_ep_rx_notimpl_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
     {CUSTOM_EP_SCENES_CLUSTER, custom_ep_rx_notimpl_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
     {CUSTOM_EP_ONOFF_CLUSTER, custom_ep_rx_on_off_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
-    {CUSTOM_EP_BIN_IN_CLUSTER, custom_ep_rx_notimpl_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
+    {CUSTOM_EP_BIN_IN_CLUSTER, custom_ep_rx_binary_input_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
     WPAN_CLUST_ENTRY_LIST_END
 };
 
 const wpan_cluster_table_entry_t custom_ep2_clusters[] = {
   {CUSTOM_EP_BASIC_CLUSTER, NULL, NULL, WPAN_CLUST_FLAG_INPUT},
   {CUSTOM_EP_ONOFF_CLUSTER, custom_ep_rx_on_off_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
+  {CUSTOM_EP_BIN_IN_CLUSTER, custom_ep_rx_binary_input_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
   WPAN_CLUST_ENTRY_LIST_END
 };
 
@@ -113,6 +113,50 @@ const wpan_cluster_table_entry_t custom_ep4_clusters[] = {
   {CUSTOM_EP_ONOFF_CLUSTER, custom_ep_rx_on_off_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
   WPAN_CLUST_ENTRY_LIST_END
 };
+
+// EXPIREMENTATION
+typedef struct zcl_binary_input_attr_t {
+  zcl_attribute_base_t		active_text;
+  zcl_attribute_base_t		description;
+  zcl_attribute_base_t		inactive_text;
+  zcl_attribute_base_t		out_of_service;
+  zcl_attribute_base_t		present_value;
+  uint16_t						end_of_list;
+} zcl_binary_input_attr_t;
+// Variable data for ZCL_CLUST_BINARY_IN
+typedef struct zcl_binary_input_t {
+  bool_t		present_value;
+  bool_t		out_of_service;
+} zcl_binary_input_t;
+
+#define ZCL_BININ_ATTR_ACTIVE_TEXT    0x0004	// CHAR STRING
+#define ZCL_BININ_ATTR_DESCRIPTION    0x001C	// CHAR STRING
+#define ZCL_BININ_ATTR_INACTIVE_TEXT  0x002E	// CHAR STRING
+#define ZCL_BININ_ATTR_OUT_OF_SERVICE 0x0051	// BOOLEAN
+#define ZCL_BININ_ATTR_PRESENT_VALUE  0x0055	// BOOLEAN
+
+zcl_binary_input_t binaryInput = { ZCL_BOOL_FALSE, ZCL_BOOL_FALSE };
+const zcl_binary_input_attr_t FAR zcl_binin_attributes = {
+		{	ZCL_BININ_ATTR_ACTIVE_TEXT,	   ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_STRING_CHAR,	"BinIn ON" },
+		{	ZCL_BININ_ATTR_DESCRIPTION,	   ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_STRING_CHAR,	"BinIn Description" },
+		{	ZCL_BININ_ATTR_INACTIVE_TEXT,	 ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_STRING_CHAR,	"BinIn OFF" },
+		{	ZCL_BININ_ATTR_OUT_OF_SERVICE, ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_LOGICAL_BOOLEAN, &binaryInput.out_of_service },
+		{	ZCL_BININ_ATTR_PRESENT_VALUE,	 ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_LOGICAL_BOOLEAN, &binaryInput.present_value	},
+		ZCL_ATTRIBUTE_END_OF_LIST };
+const zcl_attribute_tree_t FAR zcl_binin_attribute_tree[] =										\
+		{ { ZCL_MFG_NONE, &zcl_binin_attributes.active_text, NULL } };
+
+zcl_binary_input_t binaryInput2 = { ZCL_BOOL_FALSE, ZCL_BOOL_FALSE };
+const zcl_binary_input_attr_t FAR zcl_binin_attributes2 = {
+  {	ZCL_BININ_ATTR_ACTIVE_TEXT,	   ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_STRING_CHAR,	"BinIn ON" },
+  {	ZCL_BININ_ATTR_DESCRIPTION,	   ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_STRING_CHAR,	"BinIn Description" },
+  {	ZCL_BININ_ATTR_INACTIVE_TEXT,	 ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_STRING_CHAR,	"BinIn OFF" },
+  {	ZCL_BININ_ATTR_OUT_OF_SERVICE, ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_LOGICAL_BOOLEAN, &binaryInput2.out_of_service },
+  {	ZCL_BININ_ATTR_PRESENT_VALUE,	 ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_LOGICAL_BOOLEAN, &binaryInput2.present_value	},
+  ZCL_ATTRIBUTE_END_OF_LIST };
+const zcl_attribute_tree_t FAR zcl_binin_attribute_tree2[] =										\
+		{ { ZCL_MFG_NONE, &zcl_binin_attributes2.active_text, NULL } };
+// END EXPERIMENTATION
 
 int custom_ep_basic_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
 {
@@ -196,9 +240,10 @@ int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *c
   } response;
 
   puts("\n=== CUSTOM ENDPOINT HANDLER - ON OFF CLUSTER ===");
+  wpan_envelope_dump(envelope);
   puts("Building ZCL Command based on received envelope: ");
   if(zcl_command_build(&zcl, envelope, context) == 0) {
-    wpan_envelope_dump(envelope);
+    zcl_command_dump(&zcl);
     puts("----------------------");
     // Handle all the commands
 
@@ -320,6 +365,25 @@ int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *c
   }
 
   return 0;
+}
+
+int custom_ep_rx_binary_input_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
+{
+  uint8_t                 *start_response;
+  uint8_t									*end_response;
+  PACKED_STRUCT {
+    zcl_header_response_t	header;
+    uint8_t								buffer[20];
+  } response;
+
+  puts("\n=== CUSTOM ENDPOINT HANDLER - BINARY INPUT CLUSTER ===");
+  wpan_envelope_dump(envelope);
+  puts("Building ZCL Command based on received envelope: ");
+  if(zcl_command_build(&zcl_binin, envelope, context) == 0) {
+    zcl_command_dump(&zcl_binin);
+    puts("----------------------");
+    // Handle all the commands
+  }
 }
 
 int custom_ep_rx_notimpl_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
@@ -450,10 +514,12 @@ void relayTimer_irq(void)
 void status_1_CheckTimer_irq(void) {
   if (gpio_get(STATUS_1)) {
     /* State has changed back, stop the check timer */
-    status_1 = CONTACT_OPEN;
+    // Contact open
+    binaryInput.present_value = ZCL_BOOL_FALSE;
     status_1_TimerSet = FALSE;
     timer_enable(status_1_CheckTimer, FALSE);
-    puts("EVENT TRIGGERED: status_1_CheckTimer_irq (CONTACT_OPEN)");
+    puts("EVENT TRIGGERED: status_1_CheckTimer_irq (CONTACT OPEN)");
+    send_status(binaryInput.present_value, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT, CUSTOM_EP_PROFILE));
   }
 }
 #endif
@@ -462,10 +528,12 @@ void status_1_CheckTimer_irq(void) {
 void status_2_CheckTimer_irq(void) {
   if (gpio_get(STATUS_2)) {
     /* State has changed back, stop the check timer */
-    status_2 = CONTACT_OPEN;
+    // Contact open
+    binaryInput2.present_value = ZCL_BOOL_FALSE;
     status_2_TimerSet = FALSE;
     timer_enable(status_2_CheckTimer, FALSE);
-    puts("EVENT TRIGGERED: status_2_CheckTimer_irq (CONTACT_OPEN)");
+    puts("EVENT TRIGGERED: status_2_CheckTimer_irq (CONTACT OPEN)");
+    send_status(binaryInput2.present_value, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT2, CUSTOM_EP_PROFILE));
   }
 }
 #endif
@@ -476,9 +544,11 @@ void status_1_irq(void)
   if(!status_1_TimerSet) { 
     if(timer_config(status_1_CheckTimer, TRUE, PERIODIC, 500000) == 0) {
       status_1_TimerSet = TRUE;
-      status_1 = CONTACT_CLOSED;
+      // Contact closed
+      binaryInput.present_value = ZCL_BOOL_TRUE;
     }
-    puts("EVENT TRIGGERED: status_1_irq (CONTACT_CLOSED)");
+    puts("EVENT TRIGGERED: status_1_irq (CONTACT CLOSED)");
+    send_status(binaryInput.present_value, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT, CUSTOM_EP_PROFILE));
   }
 }
 #endif
@@ -489,9 +559,11 @@ void status_2_irq(void)
   if(!status_2_TimerSet) { 
     if(timer_config(status_2_CheckTimer, TRUE, PERIODIC, 500000) == 0) {
       status_2_TimerSet = TRUE;
-      status_2 = CONTACT_CLOSED;
+      // Contact closed
+      binaryInput2.present_value = ZCL_BOOL_TRUE;
     }
-    puts("EVENT TRIGGERED: status_2_irq (CONTACT_CLOSED)");
+    puts("EVENT TRIGGERED: status_2_irq (CONTACT CLOSED)");
+    send_status(binaryInput2.present_value, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT2, CUSTOM_EP_PROFILE));
   }
 }
 #endif
@@ -514,14 +586,23 @@ void main(void)
   gpio_set(RELAY_3, 0);
   gpio_set(RELAY_4, 0);
 
-  /* During startup, we should check the STATUS_* pins in case they have already been driven low (CONTACT_CLOSED) */
+  /* During startup, we should check the STATUS_* pins in case they have already been driven low (CONTACT CLOSED) */
+  /* We dont send any event within the PAN as most likely, we still have not established a link */
   if (!gpio_get(STATUS_1)) {
-    status_1 = CONTACT_CLOSED;
-    puts("STARTUP check STATUS_1 - CONTACT_CLOSED");
+    if(timer_config(status_1_CheckTimer, TRUE, PERIODIC, 500000) == 0) {
+      status_1_TimerSet = TRUE;
+      // Contact closed
+      binaryInput.present_value = ZCL_BOOL_TRUE;
+    }
+    puts("STARTUP check STATUS_1 - CONTACT CLOSED");
   }
   if (!gpio_get(STATUS_2)) {
-    status_2 = CONTACT_CLOSED;
-    puts("STARTUP check STATUS_2 - CONTACT_CLOSED");
+    if(timer_config(status_2_CheckTimer, TRUE, PERIODIC, 500000) == 0) {
+      status_2_TimerSet = TRUE;
+      // Contact closed
+      binaryInput2.present_value = ZCL_BOOL_TRUE;
+    }
+    puts("STARTUP check STATUS_2 - CONTACT CLOSED");
   }
 
   fputs("> ", stdout);
@@ -600,4 +681,36 @@ int trigger(void) {
   else {
     return -EINVAL;
   }
+}
+
+void send_status(bool_t status, const wpan_endpoint_table_entry_t *source_endpoint) {
+  // This is meant for device side triggered notifications on state change
+  PACKED_STRUCT request {
+    zcl_header_nomfg_t	header;
+    uint8_t					payload[80];
+  } request;
+  int bytecount;
+  int retval = 0;
+  wpan_envelope_t envelope;
+  const zcl_attribute_base_t *attr_list = &zcl_binin_attributes.present_value;
+
+  wpan_envelope_create( &envelope, &xdev.wpan_dev, WPAN_IEEE_ADDR_COORDINATOR, WPAN_NET_ADDR_COORDINATOR);
+  envelope.source_endpoint = source_endpoint->endpoint;
+  envelope.dest_endpoint = 0x01;
+  envelope.cluster_id = CUSTOM_EP_BIN_IN_CLUSTER;
+  envelope.profile_id = CUSTOM_EP_PROFILE;
+  envelope.payload = &request;
+  request.header.frame_control = ZCL_FRAME_SERVER_TO_CLIENT
+                                 | ZCL_FRAME_MFG_SPECIFIC
+                                 | ZCL_FRAME_TYPE_PROFILE
+                                 | ZCL_FRAME_GENERAL
+                                 | ZCL_FRAME_DISABLE_DEF_RESP;
+  request.header.command = ZCL_CMD_REPORT_ATTRIB;
+
+  bytecount = zcl_create_attribute_records(&request.payload, sizeof(request.payload), &attr_list);
+  request.header.sequence = wpan_endpoint_next_trans( source_endpoint );
+  envelope.length = offsetof(struct request, payload) + bytecount;
+  puts("Dumping Envelope");
+  wpan_envelope_dump(&envelope);
+  wpan_envelope_send(&envelope);
 }
