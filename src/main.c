@@ -79,8 +79,7 @@ wpan_ep_state_t custom_ha_ep4_state;
 bool_t status_1_TimerSet = FALSE;
 bool_t status_2_TimerSet = FALSE;
 
-int trigger(void);
-void send_status(bool_t status, const wpan_endpoint_table_entry_t *source_endpoint);
+int trigger(uint8_t endpoint);
 int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *context);
 int custom_ep_rx_notimpl_cluster(const wpan_envelope_t FAR *envelope, void FAR *context);
 int custom_ep_rx_binary_input_cluster(const wpan_envelope_t FAR *envelope, void FAR *context);
@@ -114,7 +113,6 @@ const wpan_cluster_table_entry_t custom_ep4_clusters[] = {
   WPAN_CLUST_ENTRY_LIST_END
 };
 
-// EXPIREMENTATION
 typedef struct zcl_binary_input_attr_t {
   zcl_attribute_base_t		active_text;
   zcl_attribute_base_t		description;
@@ -156,7 +154,8 @@ const zcl_binary_input_attr_t FAR zcl_binin_attributes2 = {
   ZCL_ATTRIBUTE_END_OF_LIST };
 const zcl_attribute_tree_t FAR zcl_binin_attribute_tree2[] =										\
 		{ { ZCL_MFG_NONE, &zcl_binin_attributes2.active_text, NULL } };
-// END EXPERIMENTATION
+
+void send_status(const zcl_binary_input_attr_t *zcl_binin_attr, const wpan_endpoint_table_entry_t *source_endpoint);
 
 int custom_ep_basic_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
 {
@@ -240,11 +239,11 @@ int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *c
   } response;
 
   puts("\n=== CUSTOM ENDPOINT HANDLER - ON OFF CLUSTER ===");
-  wpan_envelope_dump(envelope);
-  puts("Building ZCL Command based on received envelope: ");
+  //wpan_envelope_dump(envelope);
+  //puts("Building ZCL Command based on received envelope: ");
   if(zcl_command_build(&zcl, envelope, context) == 0) {
-    zcl_command_dump(&zcl);
-    puts("----------------------");
+    //zcl_command_dump(&zcl);
+    //puts("----------------------");
     // Handle all the commands
 
     if(ZCL_CMD_MATCH(&zcl.frame_control, GENERAL, CLIENT_TO_SERVER, PROFILE)) {
@@ -304,11 +303,11 @@ int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *c
             }
             else {
               puts("executing!");
-              trigger();
+              trigger(zcl.envelope->dest_endpoint);
             }
           #else
             puts("executing!");
-            trigger();
+            trigger(zcl.envelope->dest_endpoint);
           #endif
 
           /* We NEED to report back the On state before going back to Off state.
@@ -316,7 +315,6 @@ int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *c
            */
           response.header.command = ZCL_CMD_REPORT_ATTRIB;
           response.header.sequence++;
-          response.header.u.std.frame_control = ZCL_FRAME_TYPE_PROFILE | ZCL_FRAME_SERVER_TO_CLIENT | ZCL_FRAME_MFG_SPECIFIC;
 
           start_response = (uint8_t *)&response + 2;
           end_response = response.buffer;
@@ -344,7 +342,6 @@ int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *c
 
       response.header.command = ZCL_CMD_REPORT_ATTRIB;
       response.header.sequence++;
-      response.header.u.std.frame_control = ZCL_FRAME_TYPE_PROFILE | ZCL_FRAME_SERVER_TO_CLIENT | ZCL_FRAME_MFG_SPECIFIC;
 
       start_response = (uint8_t *)&response + 2;
       end_response = response.buffer;
@@ -377,12 +374,39 @@ int custom_ep_rx_binary_input_cluster(const wpan_envelope_t FAR *envelope, void 
   } response;
 
   puts("\n=== CUSTOM ENDPOINT HANDLER - BINARY INPUT CLUSTER ===");
-  wpan_envelope_dump(envelope);
-  puts("Building ZCL Command based on received envelope: ");
+  //wpan_envelope_dump(envelope);
+  //puts("Building ZCL Command based on received envelope: ");
   if(zcl_command_build(&zcl_binin, envelope, context) == 0) {
-    zcl_command_dump(&zcl_binin);
-    puts("----------------------");
+    //zcl_command_dump(&zcl_binin);
+    //puts("----------------------");
     // Handle all the commands
+
+    if (ZCL_CMD_MATCH(&zcl_binin.frame_control, GENERAL, CLIENT_TO_SERVER, PROFILE))
+    {
+      if (zcl_binin.command == ZCL_CMD_READ_ATTRIB)
+      {
+        // Profile command received (Read attribute) for switch state
+        puts("Handling response for switch state read");
+
+        response.header.command = ZCL_CMD_READ_ATTRIB_RESP;
+        start_response = (uint8_t *)&response + zcl_build_header(&response.header, &zcl_binin);
+        end_response = response.buffer;
+
+        *end_response++ = 0x55;
+        *end_response++ = 0x00;
+        *end_response++ = ZCL_STATUS_SUCCESS;
+        *end_response++ = ZCL_TYPE_LOGICAL_BOOLEAN;
+        *end_response++ = binaryInput.present_value;
+
+        if (zcl_send_response(&zcl_binin, start_response, end_response - start_response) == 0) {
+          puts("Response sent successfully\n");
+        }
+      }
+      else
+      {
+        puts("Unhandled Profile command received");
+      }
+    }
   }
 }
 
@@ -396,9 +420,10 @@ int custom_ep_rx_notimpl_cluster(const wpan_envelope_t FAR *envelope, void FAR *
   } response;
 
   puts("\n=== NOTIMPL CLUSTER HANDLER ===");
+  wpan_envelope_dump(envelope);
   puts("Building ZCL Command based on received envelope: ");
   if(zcl_command_build(&zcl, envelope, context) == 0) {
-    wpan_envelope_dump(envelope);
+    zcl_command_dump(&zcl);
     puts("----------------------");
   }
   return 0;
@@ -507,6 +532,9 @@ void relayTimer_irq(void)
 {
   puts("EVENT TRIGGERED: relayTimer_irq");
   gpio_set(RELAY_1,   0);
+  gpio_set(RELAY_2,   0);
+  gpio_set(RELAY_3,   0);
+  gpio_set(RELAY_4,   0);
 }
 #endif
 
@@ -519,7 +547,7 @@ void status_1_CheckTimer_irq(void) {
     status_1_TimerSet = FALSE;
     timer_enable(status_1_CheckTimer, FALSE);
     puts("EVENT TRIGGERED: status_1_CheckTimer_irq (CONTACT OPEN)");
-    send_status(binaryInput.present_value, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT, CUSTOM_EP_PROFILE));
+    send_status(&zcl_binin_attributes, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT, CUSTOM_EP_PROFILE));
   }
 }
 #endif
@@ -533,7 +561,7 @@ void status_2_CheckTimer_irq(void) {
     status_2_TimerSet = FALSE;
     timer_enable(status_2_CheckTimer, FALSE);
     puts("EVENT TRIGGERED: status_2_CheckTimer_irq (CONTACT OPEN)");
-    send_status(binaryInput2.present_value, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT2, CUSTOM_EP_PROFILE));
+    send_status(&zcl_binin_attributes2, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT2, CUSTOM_EP_PROFILE));
   }
 }
 #endif
@@ -548,7 +576,7 @@ void status_1_irq(void)
       binaryInput.present_value = ZCL_BOOL_TRUE;
     }
     puts("EVENT TRIGGERED: status_1_irq (CONTACT CLOSED)");
-    send_status(binaryInput.present_value, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT, CUSTOM_EP_PROFILE));
+    send_status(&zcl_binin_attributes, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT, CUSTOM_EP_PROFILE));
   }
 }
 #endif
@@ -563,7 +591,7 @@ void status_2_irq(void)
       binaryInput2.present_value = ZCL_BOOL_TRUE;
     }
     puts("EVENT TRIGGERED: status_2_irq (CONTACT CLOSED)");
-    send_status(binaryInput2.present_value, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT2, CUSTOM_EP_PROFILE));
+    send_status(&zcl_binin_attributes2, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT2, CUSTOM_EP_PROFILE));
   }
 }
 #endif
@@ -670,12 +698,29 @@ void main(void)
   }
 }
 
-int trigger(void) {
+int trigger(uint8_t endpoint) {
   puts("Trigger!");
   gpio_set(RELAY_1, 0);
+  gpio_set(RELAY_2, 0);
+  gpio_set(RELAY_3, 0);
+  gpio_set(RELAY_4, 0);
 
-  if(timer_config(relayTimer, TRUE, ONE_SHOT, 125000) == 0) {
-    gpio_set(RELAY_1, 1);
+  if(timer_config(relayTimer, TRUE, ONE_SHOT, RELAY_TIMER) == 0) {
+    if(endpoint == CUSTOM_ENDPOINT) {
+      gpio_set(RELAY_1, 1);
+    }
+    else if(endpoint == CUSTOM_ENDPOINT2) {
+      gpio_set(RELAY_2, 1);
+    }
+    else if(endpoint == CUSTOM_ENDPOINT3) {
+      gpio_set(RELAY_3, 1);
+    }
+    else if(endpoint == CUSTOM_ENDPOINT4) {
+      gpio_set(RELAY_4, 1);
+    }
+    else {
+      puts("Invalid endpoint received for triggering relay, no action taken.");
+    }
     return 0;
   }
   else {
@@ -683,7 +728,7 @@ int trigger(void) {
   }
 }
 
-void send_status(bool_t status, const wpan_endpoint_table_entry_t *source_endpoint) {
+void send_status(const zcl_binary_input_attr_t *zcl_binin_attr, const wpan_endpoint_table_entry_t *source_endpoint) {
   // This is meant for device side triggered notifications on state change
   PACKED_STRUCT request {
     zcl_header_nomfg_t	header;
@@ -692,7 +737,7 @@ void send_status(bool_t status, const wpan_endpoint_table_entry_t *source_endpoi
   int bytecount;
   int retval = 0;
   wpan_envelope_t envelope;
-  const zcl_attribute_base_t *attr_list = &zcl_binin_attributes.present_value;
+  const zcl_attribute_base_t *attr_list = &zcl_binin_attr->present_value;
 
   wpan_envelope_create( &envelope, &xdev.wpan_dev, WPAN_IEEE_ADDR_COORDINATOR, WPAN_NET_ADDR_COORDINATOR);
   envelope.source_endpoint = source_endpoint->endpoint;
@@ -701,16 +746,12 @@ void send_status(bool_t status, const wpan_endpoint_table_entry_t *source_endpoi
   envelope.profile_id = CUSTOM_EP_PROFILE;
   envelope.payload = &request;
   request.header.frame_control = ZCL_FRAME_SERVER_TO_CLIENT
-                                 | ZCL_FRAME_MFG_SPECIFIC
                                  | ZCL_FRAME_TYPE_PROFILE
-                                 | ZCL_FRAME_GENERAL
                                  | ZCL_FRAME_DISABLE_DEF_RESP;
   request.header.command = ZCL_CMD_REPORT_ATTRIB;
 
   bytecount = zcl_create_attribute_records(&request.payload, sizeof(request.payload), &attr_list);
   request.header.sequence = wpan_endpoint_next_trans( source_endpoint );
   envelope.length = offsetof(struct request, payload) + bytecount;
-  puts("Dumping Envelope");
-  wpan_envelope_dump(&envelope);
   wpan_envelope_send(&envelope);
 }

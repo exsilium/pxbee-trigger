@@ -29,6 +29,9 @@
 /* Ignore On command received via Broadcast message */
 #define PXBEE_TRIGGER_IGNORE_BROADCAST
 
+/* How long a relay should be activated upon trigger (in microseconds) */
+#define RELAY_TIMER         125000
+
 /* Settings END */
  
 #include <zigbee/zdo.h>
