@@ -577,6 +577,7 @@ void status_2_CheckTimer_irq(void) {
     status_2_SendStatus = FALSE;
   }
   else if(gpio_get(STATUS_2) && !status_2_SendStatus) {
+    puts("EVENT TRIGGERED: status_2_irq (CONTACT OPEN)");
     binaryInput2.present_value = ZCL_BOOL_FALSE;
     send_status(&zcl_binin_attributes2, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT2, CUSTOM_EP_PROFILE));
     status_2_SendStatus = TRUE;
