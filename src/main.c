@@ -77,7 +77,11 @@ wpan_ep_state_t custom_ha_ep4_state;
 
 /* STATUS_* Pins */
 bool_t status_1_TimerSet = FALSE;
+bool_t status_1_InterruptFree = TRUE;
+bool_t status_1_SendStatus = TRUE;
 bool_t status_2_TimerSet = FALSE;
+bool_t status_2_InterruptFree = TRUE;
+bool_t status_2_SendStatus = TRUE;
 
 int trigger(uint8_t endpoint);
 int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *context);
@@ -396,7 +400,16 @@ int custom_ep_rx_binary_input_cluster(const wpan_envelope_t FAR *envelope, void 
         *end_response++ = 0x00;
         *end_response++ = ZCL_STATUS_SUCCESS;
         *end_response++ = ZCL_TYPE_LOGICAL_BOOLEAN;
-        *end_response++ = binaryInput.present_value;
+
+        if(zcl_binin.envelope->dest_endpoint == CUSTOM_ENDPOINT) {
+          *end_response++ = binaryInput.present_value;
+        }
+        else if(zcl_binin.envelope->dest_endpoint == CUSTOM_ENDPOINT2) {
+          *end_response++ = binaryInput2.present_value;
+        }
+        else {
+          *end_response++ = ZCL_BOOL_FALSE;
+        }
 
         if (zcl_send_response(&zcl_binin, start_response, end_response - start_response) == 0) {
           puts("Response sent successfully\n");
@@ -540,28 +553,35 @@ void relayTimer_irq(void)
 
 #ifdef status_1_CheckTimer_irq
 void status_1_CheckTimer_irq(void) {
-  if (gpio_get(STATUS_1)) {
-    /* State has changed back, stop the check timer */
-    // Contact open
+  if (!((!gpio_get(STATUS_1)) ^ binaryInput.present_value) && status_1_SendStatus) {
+    puts("EVENT TRIGGERED: status_1_irq (CONTACT CLOSED)");
+    send_status(&zcl_binin_attributes, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT, CUSTOM_EP_PROFILE));
+    status_1_SendStatus = FALSE;
+  }
+  else if(gpio_get(STATUS_1) && !status_1_SendStatus) {
+    puts("EVENT TRIGGERED: status_1_irq (CONTACT OPEN)");
     binaryInput.present_value = ZCL_BOOL_FALSE;
+    send_status(&zcl_binin_attributes, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT, CUSTOM_EP_PROFILE));
+    status_1_SendStatus = TRUE;
     status_1_TimerSet = FALSE;
     timer_enable(status_1_CheckTimer, FALSE);
-    puts("EVENT TRIGGERED: status_1_CheckTimer_irq (CONTACT OPEN)");
-    send_status(&zcl_binin_attributes, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT, CUSTOM_EP_PROFILE));
   }
 }
 #endif
 
 #ifdef status_2_CheckTimer_irq
 void status_2_CheckTimer_irq(void) {
-  if (gpio_get(STATUS_2)) {
-    /* State has changed back, stop the check timer */
-    // Contact open
+  if (!((!gpio_get(STATUS_2)) ^ binaryInput2.present_value) && status_2_SendStatus) {
+    puts("EVENT TRIGGERED: status_2_irq (CONTACT CLOSED)");
+    send_status(&zcl_binin_attributes2, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT2, CUSTOM_EP_PROFILE));
+    status_2_SendStatus = FALSE;
+  }
+  else if(gpio_get(STATUS_2) && !status_2_SendStatus) {
     binaryInput2.present_value = ZCL_BOOL_FALSE;
+    send_status(&zcl_binin_attributes2, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT2, CUSTOM_EP_PROFILE));
+    status_2_SendStatus = TRUE;
     status_2_TimerSet = FALSE;
     timer_enable(status_2_CheckTimer, FALSE);
-    puts("EVENT TRIGGERED: status_2_CheckTimer_irq (CONTACT OPEN)");
-    send_status(&zcl_binin_attributes2, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT2, CUSTOM_EP_PROFILE));
   }
 }
 #endif
@@ -569,14 +589,15 @@ void status_2_CheckTimer_irq(void) {
 #ifdef status_1_irq
 void status_1_irq(void)
 {
-  if(!status_1_TimerSet) { 
-    if(timer_config(status_1_CheckTimer, TRUE, PERIODIC, 500000) == 0) {
-      status_1_TimerSet = TRUE;
-      // Contact closed
-      binaryInput.present_value = ZCL_BOOL_TRUE;
+  if(status_1_InterruptFree) {
+    status_1_InterruptFree = FALSE;
+    if(!status_1_TimerSet) {
+      binaryInput.present_value = !gpio_get(STATUS_1);
+      if(timer_config(status_1_CheckTimer, TRUE, PERIODIC, DEBOUNCE_TIMER) == 0) {
+        status_1_TimerSet = TRUE;
+      }
     }
-    puts("EVENT TRIGGERED: status_1_irq (CONTACT CLOSED)");
-    send_status(&zcl_binin_attributes, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT, CUSTOM_EP_PROFILE));
+    status_1_InterruptFree = TRUE;
   }
 }
 #endif
@@ -584,14 +605,15 @@ void status_1_irq(void)
 #ifdef status_2_irq
 void status_2_irq(void)
 {
-  if(!status_2_TimerSet) { 
-    if(timer_config(status_2_CheckTimer, TRUE, PERIODIC, 500000) == 0) {
-      status_2_TimerSet = TRUE;
-      // Contact closed
-      binaryInput2.present_value = ZCL_BOOL_TRUE;
+  if(status_2_InterruptFree) {
+    status_2_InterruptFree = FALSE;
+    if(!status_2_TimerSet) {
+      binaryInput2.present_value = !gpio_get(STATUS_2);
+      if(timer_config(status_2_CheckTimer, TRUE, PERIODIC, DEBOUNCE_TIMER) == 0) {
+        status_2_TimerSet = TRUE;
+      }
     }
-    puts("EVENT TRIGGERED: status_2_irq (CONTACT CLOSED)");
-    send_status(&zcl_binin_attributes2, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT2, CUSTOM_EP_PROFILE));
+    status_2_InterruptFree = TRUE;
   }
 }
 #endif
@@ -615,21 +637,12 @@ void main(void)
   gpio_set(RELAY_4, 0);
 
   /* During startup, we should check the STATUS_* pins in case they have already been driven low (CONTACT CLOSED) */
-  /* We dont send any event within the PAN as most likely, we still have not established a link */
   if (!gpio_get(STATUS_1)) {
-    if(timer_config(status_1_CheckTimer, TRUE, PERIODIC, 500000) == 0) {
-      status_1_TimerSet = TRUE;
-      // Contact closed
-      binaryInput.present_value = ZCL_BOOL_TRUE;
-    }
+    binaryInput.present_value = !gpio_get(STATUS_1);
     puts("STARTUP check STATUS_1 - CONTACT CLOSED");
   }
   if (!gpio_get(STATUS_2)) {
-    if(timer_config(status_2_CheckTimer, TRUE, PERIODIC, 500000) == 0) {
-      status_2_TimerSet = TRUE;
-      // Contact closed
-      binaryInput2.present_value = ZCL_BOOL_TRUE;
-    }
+    binaryInput2.present_value = !gpio_get(STATUS_2);
     puts("STARTUP check STATUS_2 - CONTACT CLOSED");
   }
 
@@ -700,10 +713,6 @@ void main(void)
 
 int trigger(uint8_t endpoint) {
   puts("Trigger!");
-  gpio_set(RELAY_1, 0);
-  gpio_set(RELAY_2, 0);
-  gpio_set(RELAY_3, 0);
-  gpio_set(RELAY_4, 0);
 
   if(timer_config(relayTimer, TRUE, ONE_SHOT, RELAY_TIMER) == 0) {
     if(endpoint == CUSTOM_ENDPOINT) {

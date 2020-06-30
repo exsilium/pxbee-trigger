@@ -89,7 +89,7 @@
 /* RELAY_2 pin */
 #define ENABLE_GPIO_XPIN_6
 #define RELAY_2                         XPIN_6
-#define GPIO_CFG_DIR_6                  GPIO_CFG_INPUT
+#define GPIO_CFG_DIR_6                  GPIO_CFG_OUTPUT
 #define GPIO_CFG_PULL_UP_EN_6           GPIO_CFG_PULL_UP_DIS
 #define GPIO_CFG_SLEW_RATE_EN_6         GPIO_CFG_SLEW_RATE_DIS
 #define GPIO_CFG_DRV_STR_6              GPIO_CFG_DRV_STR_HIGH

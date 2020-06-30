@@ -32,6 +32,9 @@
 /* How long a relay should be activated upon trigger (in microseconds) */
 #define RELAY_TIMER         125000
 
+/* Debounce Timer (in microseconds) */
+#define DEBOUNCE_TIMER      500000
+
 /* Settings END */
  
 #include <zigbee/zdo.h>
