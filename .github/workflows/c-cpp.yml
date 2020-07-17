@@ -17,3 +17,5 @@ jobs:
       run: sudo apt-get install lib32stdc++6
     - name: make
       run: make
+      env:
+        WRAPINDOCKER: ""
