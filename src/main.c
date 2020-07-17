@@ -32,23 +32,23 @@
  *   XPIN1 = VCC
  *   XPIN2 = uart0 [TX Pin]
  *   XPIN3 = uart0 [RX Pin]
- *   XPIN4 = <<UNUSED>>
+ *   XPIN4 = RELAY_3 [GPIO Pin]
  *   XPIN5 = special0 [Reset Pin]
- *   XPIN6 = special0 [RSSI PWM Pin]
- *   XPIN7 = LED [GPIO Pin]
+ *   XPIN6 = RELAY_2 [GPIO Pin] (Disabled: special0 [RSSI PWM Pin])
+ *   XPIN7 = RELAY_1
  *   XPIN8 = special0 [BKGD Pin]
  *   XPIN9 = <<UNUSED>>
  *   XPIN10 = GND
- *   XPIN11 = <<UNUSED>>
+ *   XPIN11 = RELAY_4
  *   XPIN12 = <<UNUSED>>
  *   XPIN13 = <<UNUSED>>
  *   XPIN14 = VCC REF
  *   XPIN15 = special0 [Association Pin]
- *   XPIN16 = RELAY_2 [GPIO Pin]
- *   XPIN17 = RELAY [GPIO Pin]
- *   XPIN18 = <<UNUSED>>
- *   XPIN19 = LED_GROVE
- *   XPIN20 = special0 [Commissioning Pin]
+ *   XPIN16 = <<UNUSED>>
+ *   XPIN17 = <<UNUSED>>
+ *   XPIN18 = Status pin 1 [IRQ Pin] (Pulled UP)
+ *   XPIN19 = Status pin 2 [IRQ Pin] (Pulled UP)
+ *   XPIN20 = <<UNUSED>>
  *
  ************************************/
 
@@ -62,12 +62,31 @@
 #define CUSTOM_EP_GROUPS_CLUSTER   0x0004 /* Not implemented */
 #define CUSTOM_EP_SCENES_CLUSTER   0x0005 /* Not implemented */
 #define CUSTOM_EP_ONOFF_CLUSTER    0x0006
+#define CUSTOM_EP_BIN_IN_CLUSTER   0x000f /* To be implemented? - custom_ep_rx_binary_in_cluster */
 
 zcl_command_t zcl;
+zcl_command_t zcl_onoff;
+zcl_command_t zcl_binin;
 
-int trigger(void);
+/* Global for the ZDO/ZCL state keeping */
+wpan_ep_state_t zdo_ep_state;
+wpan_ep_state_t custom_ha_ep_state;
+wpan_ep_state_t custom_ha_ep2_state;
+wpan_ep_state_t custom_ha_ep3_state;
+wpan_ep_state_t custom_ha_ep4_state;
+
+/* STATUS_* Pins */
+bool_t status_1_TimerSet = FALSE;
+bool_t status_1_InterruptFree = TRUE;
+bool_t status_1_SendStatus = TRUE;
+bool_t status_2_TimerSet = FALSE;
+bool_t status_2_InterruptFree = TRUE;
+bool_t status_2_SendStatus = TRUE;
+
+int trigger(uint8_t endpoint);
 int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *context);
 int custom_ep_rx_notimpl_cluster(const wpan_envelope_t FAR *envelope, void FAR *context);
+int custom_ep_rx_binary_input_cluster(const wpan_envelope_t FAR *envelope, void FAR *context);
 
 const wpan_cluster_table_entry_t custom_ep_clusters[] = {
     {CUSTOM_EP_BASIC_CLUSTER, NULL, NULL, WPAN_CLUST_FLAG_INPUT},
@@ -75,42 +94,79 @@ const wpan_cluster_table_entry_t custom_ep_clusters[] = {
     {CUSTOM_EP_GROUPS_CLUSTER, custom_ep_rx_notimpl_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
     {CUSTOM_EP_SCENES_CLUSTER, custom_ep_rx_notimpl_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
     {CUSTOM_EP_ONOFF_CLUSTER, custom_ep_rx_on_off_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
+    {CUSTOM_EP_BIN_IN_CLUSTER, custom_ep_rx_binary_input_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
     WPAN_CLUST_ENTRY_LIST_END
 };
 
+const wpan_cluster_table_entry_t custom_ep2_clusters[] = {
+  {CUSTOM_EP_BASIC_CLUSTER, NULL, NULL, WPAN_CLUST_FLAG_INPUT},
+  {CUSTOM_EP_ONOFF_CLUSTER, custom_ep_rx_on_off_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
+  {CUSTOM_EP_BIN_IN_CLUSTER, custom_ep_rx_binary_input_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
+  WPAN_CLUST_ENTRY_LIST_END
+};
+
+const wpan_cluster_table_entry_t custom_ep3_clusters[] = {
+  {CUSTOM_EP_BASIC_CLUSTER, NULL, NULL, WPAN_CLUST_FLAG_INPUT},
+  {CUSTOM_EP_ONOFF_CLUSTER, custom_ep_rx_on_off_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
+  WPAN_CLUST_ENTRY_LIST_END
+};
+
+const wpan_cluster_table_entry_t custom_ep4_clusters[] = {
+  {CUSTOM_EP_BASIC_CLUSTER, NULL, NULL, WPAN_CLUST_FLAG_INPUT},
+  {CUSTOM_EP_ONOFF_CLUSTER, custom_ep_rx_on_off_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
+  WPAN_CLUST_ENTRY_LIST_END
+};
+
+typedef struct zcl_binary_input_attr_t {
+  zcl_attribute_base_t		active_text;
+  zcl_attribute_base_t		description;
+  zcl_attribute_base_t		inactive_text;
+  zcl_attribute_base_t		out_of_service;
+  zcl_attribute_base_t		present_value;
+  uint16_t						end_of_list;
+} zcl_binary_input_attr_t;
+// Variable data for ZCL_CLUST_BINARY_IN
+typedef struct zcl_binary_input_t {
+  bool_t		present_value;
+  bool_t		out_of_service;
+} zcl_binary_input_t;
+
+#define ZCL_BININ_ATTR_ACTIVE_TEXT    0x0004	// CHAR STRING
+#define ZCL_BININ_ATTR_DESCRIPTION    0x001C	// CHAR STRING
+#define ZCL_BININ_ATTR_INACTIVE_TEXT  0x002E	// CHAR STRING
+#define ZCL_BININ_ATTR_OUT_OF_SERVICE 0x0051	// BOOLEAN
+#define ZCL_BININ_ATTR_PRESENT_VALUE  0x0055	// BOOLEAN
+
+zcl_binary_input_t binaryInput = { ZCL_BOOL_FALSE, ZCL_BOOL_FALSE };
+const zcl_binary_input_attr_t FAR zcl_binin_attributes = {
+		{	ZCL_BININ_ATTR_ACTIVE_TEXT,	   ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_STRING_CHAR,	"BinIn ON" },
+		{	ZCL_BININ_ATTR_DESCRIPTION,	   ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_STRING_CHAR,	"BinIn Description" },
+		{	ZCL_BININ_ATTR_INACTIVE_TEXT,	 ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_STRING_CHAR,	"BinIn OFF" },
+		{	ZCL_BININ_ATTR_OUT_OF_SERVICE, ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_LOGICAL_BOOLEAN, &binaryInput.out_of_service },
+		{	ZCL_BININ_ATTR_PRESENT_VALUE,	 ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_LOGICAL_BOOLEAN, &binaryInput.present_value	},
+		ZCL_ATTRIBUTE_END_OF_LIST };
+const zcl_attribute_tree_t FAR zcl_binin_attribute_tree[] =										\
+		{ { ZCL_MFG_NONE, &zcl_binin_attributes.active_text, NULL } };
+
+zcl_binary_input_t binaryInput2 = { ZCL_BOOL_FALSE, ZCL_BOOL_FALSE };
+const zcl_binary_input_attr_t FAR zcl_binin_attributes2 = {
+  {	ZCL_BININ_ATTR_ACTIVE_TEXT,	   ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_STRING_CHAR,	"BinIn ON" },
+  {	ZCL_BININ_ATTR_DESCRIPTION,	   ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_STRING_CHAR,	"BinIn Description" },
+  {	ZCL_BININ_ATTR_INACTIVE_TEXT,	 ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_STRING_CHAR,	"BinIn OFF" },
+  {	ZCL_BININ_ATTR_OUT_OF_SERVICE, ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_LOGICAL_BOOLEAN, &binaryInput2.out_of_service },
+  {	ZCL_BININ_ATTR_PRESENT_VALUE,	 ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_LOGICAL_BOOLEAN, &binaryInput2.present_value	},
+  ZCL_ATTRIBUTE_END_OF_LIST };
+const zcl_attribute_tree_t FAR zcl_binin_attribute_tree2[] =										\
+		{ { ZCL_MFG_NONE, &zcl_binin_attributes2.active_text, NULL } };
+
+void send_status(const zcl_binary_input_attr_t *zcl_binin_attr, const wpan_endpoint_table_entry_t *source_endpoint);
+
 int custom_ep_basic_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
 {
-  uint8_t *payload_pointer = envelope->payload;
-  int i = 0;
-
-  payload_pointer[envelope->length] = '\0'; /* Add Null-terminator for printing */
-  printf("\nCUSTOM ENDPOINT'S DEFAULT CLUSTER HANDLER\n");
-  printf("Received  : %s\n", payload_pointer);
-  if(envelope->length > 0) {
-    printf("Payload in Hex: ");
-    for(i = 0; i < envelope->length; i++) {
-      printf("%02X ", payload_pointer[i]);
-    }
-    printf("\n");
-  }
-  printf("Payload length: %02X\n", envelope->length);
-  printf("Cluster ID:     %02X\n", envelope->cluster_id);
-  printf("Profile ID:     %02X\n", envelope->profile_id);
-  printf("Destin. EP:     %02X\n", envelope->dest_endpoint);
-  printf("Source  EP:     %02X\n", envelope->source_endpoint);
-
-  /* Let's try to debug the ZCL command */
-  zcl_envelope_payload_dump(envelope);
-
-  /* Let's try to respond */
-  printf("\n\nBuilding ZCL Command based on received envelope: ");
+  puts("\n=== CUSTOM ENDPOINT'S DEFAULT CLUSTER HANDLER ===");
+  puts("Building ZCL Command based on received envelope: ");
   if(zcl_command_build(&zcl, envelope, context) == 0) {
-    printf("OK!\n");
-    printf("----------------------\n");
-    printf("Frame Control: %02X\n", zcl.frame_control);
-    printf("Command: %02X\n", zcl.command);
-    printf("ZCL Payload length: %02X\n", zcl.length);
-    hex_dump(zcl.zcl_payload, zcl.length, HEX_DUMP_FLAG_TAB);
+    wpan_envelope_dump(envelope);
 
     if(ZCL_CMD_MATCH( &zcl.frame_control, GENERAL, CLIENT_TO_SERVER, PROFILE)) {
       if(zcl.command == ZCL_CMD_READ_ATTRIB && zcl.length == 2) {
@@ -128,54 +184,51 @@ int custom_ep_basic_cluster(const wpan_envelope_t FAR *envelope, void FAR *conte
 
         if(zclPayload[0] == 0x01 && zclPayload[1] == 0x00) {
           /* Application version request */
-          printf("Handling response for Application version request\n");
+          puts("Handling response for Application version request");
           *end_response++ = 0x01;
           *end_response++ = 0x00;
           *end_response++ = ZCL_STATUS_SUCCESS;
           *end_response++ = 0x20;
           *end_response++ = 0x00;
 
-          printf("Response length: %02X\n", end_response - start_response);
           if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
-            printf("Response sent successfully");
+            puts("Response sent successfully");
           }
         }
         else if(zclPayload[0] == 0x04 && zclPayload[1] == 0x00) {
           /* Device manufacturer request */
-          printf("Handling response for Device manufacturer request\n");
+          puts("Handling response for Device manufacturer request");
           *end_response++ = 0x04;
           *end_response++ = 0x00;
           *end_response++ = ZCL_STATUS_SUCCESS;
           *end_response++ = 0x42;
           end_response = appendStringChar(end_response, ZCL_MANUFACTURER);
 
-          printf("Response length: %02X\n", end_response - start_response);
           if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
-            printf("Response sent successfully");
+            puts("Response sent successfully");
           }
         }
         else if(zclPayload[0] == 0x05 && zclPayload[1] == 0x00) {
           /* Device developer request */
-          printf("Handling response for Device developer request\n");
+          puts("Handling response for Device developer request");
           *end_response++ = 0x05;
           *end_response++ = 0x00;
           *end_response++ = ZCL_STATUS_SUCCESS;
           *end_response++ = 0x42;
           end_response = appendStringChar(end_response, ZCL_MODEL);
 
-          printf("Response length: %02X\n", end_response - start_response);
           if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
-            printf("Response sent successfully\n");
+            puts("Response sent successfully");
           }
         }
       }
     }
   }
   else {
-    printf("Error!\n");
+    puts("Error!\n");
   }
 
-  printf("=====================================================================\n");
+  puts("=====================================================================\n");
 
   return 0;
 }
@@ -189,24 +242,18 @@ int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *c
     uint8_t								buffer[20];
   } response;
 
-  printf("\nCUSTOM ENDPOINT HANDLER\n");
-  printf("=======================\n");
-  printf("\n\nBuilding ZCL Command based on received envelope: ");
+  puts("\n=== CUSTOM ENDPOINT HANDLER - ON OFF CLUSTER ===");
+  //wpan_envelope_dump(envelope);
+  //puts("Building ZCL Command based on received envelope: ");
   if(zcl_command_build(&zcl, envelope, context) == 0) {
-    printf("OK!\n");
-    printf("----------------------\n");
-    printf("Frame Control: %02X\n", zcl.frame_control);
-    printf("Command: %02X\n", zcl.command);
-    printf("ZCL Payload length: %02X\n", zcl.length);
-    hex_dump(zcl.zcl_payload, zcl.length, HEX_DUMP_FLAG_TAB);
-    printf("----------------------\n");
-    zcl_envelope_payload_dump(envelope);
+    //zcl_command_dump(&zcl);
+    //puts("----------------------");
     // Handle all the commands
 
     if(ZCL_CMD_MATCH(&zcl.frame_control, GENERAL, CLIENT_TO_SERVER, PROFILE)) {
       if(zcl.command == ZCL_CMD_READ_ATTRIB) {
         // Profile command received (Read attribute) for switch state
-        printf("Handling response for switch state read\n");
+        puts("Handling response for switch state read");
 
         response.header.command = ZCL_CMD_READ_ATTRIB_RESP;
         start_response = (uint8_t *)&response + zcl_build_header(&response.header, &zcl);
@@ -218,14 +265,13 @@ int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *c
         *end_response++ = ZCL_TYPE_LOGICAL_BOOLEAN;
         *end_response++ = 0x00; // Always return off state
 
-        printf("Response length: %02X\n", end_response - start_response);
         if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
-          printf("Response sent successfully\n");
+          puts("Response sent successfully\n");
         }
       }
       else if(zcl.command == ZCL_CMD_CONFIGURE_REPORT) {
         // Profile command received (Configure report) for switch state
-        printf("Handling response for configure report command\n");
+        puts("Handling response for configure report command");
 
         response.header.command = ZCL_CMD_CONFIGURE_REPORT_RESP;
         start_response = (uint8_t *)&response + zcl_build_header(&response.header, &zcl);
@@ -236,37 +282,36 @@ int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *c
         *end_response++ = 0x00;
         *end_response++ = 0x00;
 
-        printf("Response length: %02X\n", end_response - start_response);
         if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
-          printf("Response sent successfully\n");
+          puts("Response sent successfully\n");
         }
       }
       else {
-        printf("Unhandled Profile command received\n");
+        puts("Unhandled Profile command received");
       }
     }
     else if(ZCL_CMD_MATCH(&zcl.frame_control, GENERAL, CLIENT_TO_SERVER, CLUSTER)) {
       // Cluster command received
-      printf("Handling switch change command\n");
+      puts("Handling switch change command");
       switch(zcl.command) {
         case 0x00:
-          printf("Turn off command received\n");
+          puts("Turn off command received");
           break;
 
         case 0x01:
-          printf("Turn on command received, ");
+          puts("Turn on command received, ");
 
           #ifdef PXBEE_TRIGGER_IGNORE_BROADCAST
             if(envelope->options & WPAN_ENVELOPE_BROADCAST_ADDR) {
-              printf("ignoring due to command sent as broadcast!\n");
+              puts("ignoring due to command sent as broadcast!");
             }
             else {
-              printf("executing!\n");
-              trigger();
+              puts("executing!");
+              trigger(zcl.envelope->dest_endpoint);
             }
           #else
-            printf("executing!\n");
-            trigger();
+            puts("executing!");
+            trigger(zcl.envelope->dest_endpoint);
           #endif
 
           /* We NEED to report back the On state before going back to Off state.
@@ -274,7 +319,6 @@ int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *c
            */
           response.header.command = ZCL_CMD_REPORT_ATTRIB;
           response.header.sequence++;
-          response.header.u.std.frame_control = ZCL_FRAME_TYPE_PROFILE | ZCL_FRAME_SERVER_TO_CLIENT;
 
           start_response = (uint8_t *)&response + 2;
           end_response = response.buffer;
@@ -284,18 +328,17 @@ int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *c
           *end_response++ = ZCL_TYPE_LOGICAL_BOOLEAN;
           *end_response++ = 0x01; // Report On state
 
-          printf("Response length: %02X\n", end_response - start_response);
           if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
-            printf("On response sent successfully\n");
+            puts("On response sent successfully");
           }
           break;
 
         case 0x02:
-          printf("Toggle command received\n");
+          puts("Toggle command received");
           break;
 
         default:
-          printf("Unknown command received\n");
+          puts("Unknown command received");
           break;
       }
 
@@ -303,7 +346,6 @@ int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *c
 
       response.header.command = ZCL_CMD_REPORT_ATTRIB;
       response.header.sequence++;
-      response.header.u.std.frame_control = ZCL_FRAME_TYPE_PROFILE | ZCL_FRAME_SERVER_TO_CLIENT;
 
       start_response = (uint8_t *)&response + 2;
       end_response = response.buffer;
@@ -313,18 +355,72 @@ int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *c
       *end_response++ = ZCL_TYPE_LOGICAL_BOOLEAN;
       *end_response++ = 0x00; // Report Off state
 
-      printf("Response length: %02X\n", end_response - start_response);
       if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
-        printf("Off response sent successfully\n");
+        puts("Off response sent successfully\n");
       }
 
     }
   }
   else {
-    printf("Error!\n");
+    puts("Error!");
   }
 
   return 0;
+}
+
+int custom_ep_rx_binary_input_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
+{
+  uint8_t                 *start_response;
+  uint8_t									*end_response;
+  PACKED_STRUCT {
+    zcl_header_response_t	header;
+    uint8_t								buffer[20];
+  } response;
+
+  puts("\n=== CUSTOM ENDPOINT HANDLER - BINARY INPUT CLUSTER ===");
+  //wpan_envelope_dump(envelope);
+  //puts("Building ZCL Command based on received envelope: ");
+  if(zcl_command_build(&zcl_binin, envelope, context) == 0) {
+    //zcl_command_dump(&zcl_binin);
+    //puts("----------------------");
+    // Handle all the commands
+
+    if (ZCL_CMD_MATCH(&zcl_binin.frame_control, GENERAL, CLIENT_TO_SERVER, PROFILE))
+    {
+      if (zcl_binin.command == ZCL_CMD_READ_ATTRIB)
+      {
+        // Profile command received (Read attribute) for switch state
+        puts("Handling response for switch state read");
+
+        response.header.command = ZCL_CMD_READ_ATTRIB_RESP;
+        start_response = (uint8_t *)&response + zcl_build_header(&response.header, &zcl_binin);
+        end_response = response.buffer;
+
+        *end_response++ = 0x55;
+        *end_response++ = 0x00;
+        *end_response++ = ZCL_STATUS_SUCCESS;
+        *end_response++ = ZCL_TYPE_LOGICAL_BOOLEAN;
+
+        if(zcl_binin.envelope->dest_endpoint == CUSTOM_ENDPOINT) {
+          *end_response++ = binaryInput.present_value;
+        }
+        else if(zcl_binin.envelope->dest_endpoint == CUSTOM_ENDPOINT2) {
+          *end_response++ = binaryInput2.present_value;
+        }
+        else {
+          *end_response++ = ZCL_BOOL_FALSE;
+        }
+
+        if (zcl_send_response(&zcl_binin, start_response, end_response - start_response) == 0) {
+          puts("Response sent successfully\n");
+        }
+      }
+      else
+      {
+        puts("Unhandled Profile command received");
+      }
+    }
+  }
 }
 
 int custom_ep_rx_notimpl_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
@@ -336,18 +432,12 @@ int custom_ep_rx_notimpl_cluster(const wpan_envelope_t FAR *envelope, void FAR *
     uint8_t								buffer[20];
   } response;
 
-  printf("\nNOTIMPL CLUSTER HANDLER\n");
-  printf("=======================\n");
-  printf("\n\nBuilding ZCL Command based on received envelope: ");
+  puts("\n=== NOTIMPL CLUSTER HANDLER ===");
+  wpan_envelope_dump(envelope);
+  puts("Building ZCL Command based on received envelope: ");
   if(zcl_command_build(&zcl, envelope, context) == 0) {
-    printf("OK!\n");
-    printf("----------------------\n");
-    printf("Frame Control: %02X\n", zcl.frame_control);
-    printf("Command: %02X\n", zcl.command);
-    printf("ZCL Payload length: %02X\n", zcl.length);
-    hex_dump(zcl.zcl_payload, zcl.length, HEX_DUMP_FLAG_TAB);
-    printf("----------------------\n");
-    zcl_envelope_payload_dump(envelope);
+    zcl_command_dump(&zcl);
+    puts("----------------------");
   }
   return 0;
 }
@@ -377,7 +467,7 @@ int xbee_cmd_callback( const xbee_cmd_response_t FAR *response)
 			(status == XBEE_AT_RESP_BAD_COMMAND) ? "bad command" :
 			(status == XBEE_AT_RESP_BAD_PARAMETER) ? "bad parameter" :
 			(status == XBEE_AT_RESP_TX_FAIL) ? "Tx failure" :
-														  "unknown error");
+			"unknown error");
 		return XBEE_ATCMD_DONE;
 	}
 
@@ -407,8 +497,7 @@ int xbee_cmd_callback( const xbee_cmd_response_t FAR *response)
 	if (length <= 4)
 	{
 		// format hex string with (2 * number of bytes in value) leading zeros
-		printf( "= 0x%0*" PRIX32 " (%" PRIu32 ")\n", length * 2, response->value,
-			response->value);
+		printf( "= 0x%0*" PRIX32 " (%" PRIu32 ")\n", length * 2, response->value, response->value);
 	}
 	else
 	{
@@ -425,8 +514,7 @@ int xbee_transparent_rx(const wpan_envelope_t FAR *envelope, void FAR *context)
 {
   char addrbuf[ADDR64_STRING_LENGTH];
 
-  puts("Received Frame");
-  puts("---------------------");
+  puts("---Received Frame----");
   sys_watchdog_reset();
   printf("Cluster ID          : %u\n", envelope->cluster_id);
   printf("Profile ID          : %u\n", envelope->profile_id);
@@ -436,9 +524,7 @@ int xbee_transparent_rx(const wpan_envelope_t FAR *envelope, void FAR *context)
   printf("Network             : %04x\n", be16toh(envelope->network_address));
   printf("Options             : %u\n", envelope->options);
   printf("Data length         : %u\n", envelope->length);
-  puts("---------------------");
-  puts(" P  A  Y  L  O  A  D ");
-  puts("---------------------");
+  puts("-P  A  Y  L  O  A  D-");
   sys_watchdog_reset();
   dump(envelope->payload, envelope->length);
   puts("\n");
@@ -450,9 +536,7 @@ int xbee_transparent_rx(const wpan_envelope_t FAR *envelope, void FAR *context)
 #if defined(RTC_ENABLE_PERIODIC_TASK)
 void rtc_periodic_task(void)
 {
-  gpio_set(LED, !gpio_get(LED));
-  //gpio_set(RELAY, !gpio_get(LED));
-  //gpio_set(RELAY_2, gpio_get(RELAY));
+  return;
 }
 #endif
 
@@ -460,14 +544,80 @@ void rtc_periodic_task(void)
 void relayTimer_irq(void)
 {
   puts("EVENT TRIGGERED: relayTimer_irq");
-  gpio_set(RELAY,   0);
-  gpio_set(RELAY_2, 0);
+  gpio_set(RELAY_1,   0);
+  gpio_set(RELAY_2,   0);
+  gpio_set(RELAY_3,   0);
+  gpio_set(RELAY_4,   0);
 }
 #endif
 
-/* Global for the ZDO/ZCL state keeping */
-wpan_ep_state_t zdo_ep_state;
-wpan_ep_state_t custom_ha_ep_state;
+#ifdef status_1_CheckTimer_irq
+void status_1_CheckTimer_irq(void) {
+  if (!((!gpio_get(STATUS_1)) ^ binaryInput.present_value) && status_1_SendStatus) {
+    puts("EVENT TRIGGERED: status_1_irq (CONTACT CLOSED)");
+    send_status(&zcl_binin_attributes, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT, CUSTOM_EP_PROFILE));
+    status_1_SendStatus = FALSE;
+  }
+  else if(gpio_get(STATUS_1) && !status_1_SendStatus) {
+    puts("EVENT TRIGGERED: status_1_irq (CONTACT OPEN)");
+    binaryInput.present_value = ZCL_BOOL_FALSE;
+    send_status(&zcl_binin_attributes, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT, CUSTOM_EP_PROFILE));
+    status_1_SendStatus = TRUE;
+    status_1_TimerSet = FALSE;
+    timer_enable(status_1_CheckTimer, FALSE);
+  }
+}
+#endif
+
+#ifdef status_2_CheckTimer_irq
+void status_2_CheckTimer_irq(void) {
+  if (!((!gpio_get(STATUS_2)) ^ binaryInput2.present_value) && status_2_SendStatus) {
+    puts("EVENT TRIGGERED: status_2_irq (CONTACT CLOSED)");
+    send_status(&zcl_binin_attributes2, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT2, CUSTOM_EP_PROFILE));
+    status_2_SendStatus = FALSE;
+  }
+  else if(gpio_get(STATUS_2) && !status_2_SendStatus) {
+    puts("EVENT TRIGGERED: status_2_irq (CONTACT OPEN)");
+    binaryInput2.present_value = ZCL_BOOL_FALSE;
+    send_status(&zcl_binin_attributes2, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT2, CUSTOM_EP_PROFILE));
+    status_2_SendStatus = TRUE;
+    status_2_TimerSet = FALSE;
+    timer_enable(status_2_CheckTimer, FALSE);
+  }
+}
+#endif
+
+#ifdef status_1_irq
+void status_1_irq(void)
+{
+  if(status_1_InterruptFree) {
+    status_1_InterruptFree = FALSE;
+    if(!status_1_TimerSet) {
+      binaryInput.present_value = !gpio_get(STATUS_1);
+      if(timer_config(status_1_CheckTimer, TRUE, PERIODIC, DEBOUNCE_TIMER) == 0) {
+        status_1_TimerSet = TRUE;
+      }
+    }
+    status_1_InterruptFree = TRUE;
+  }
+}
+#endif
+
+#ifdef status_2_irq
+void status_2_irq(void)
+{
+  if(status_2_InterruptFree) {
+    status_2_InterruptFree = FALSE;
+    if(!status_2_TimerSet) {
+      binaryInput2.present_value = !gpio_get(STATUS_2);
+      if(timer_config(status_2_CheckTimer, TRUE, PERIODIC, DEBOUNCE_TIMER) == 0) {
+        status_2_TimerSet = TRUE;
+      }
+    }
+    status_2_InterruptFree = TRUE;
+  }
+}
+#endif
 
 void main(void)
 {
@@ -477,25 +627,27 @@ void main(void)
   sys_xbee_init();
   sys_app_banner();
 
-  gpio_set(XPIN_19, 0);
-  gpio_set(XPIN_18, 0);
-  gpio_set(XPIN_16, 0);
-  gpio_set(XPIN_11, 0);
-  gpio_set(XPIN_7,  0);
-  gpio_set(XPIN_4,  0);
-
   // Drive special pins low
   gpio_set(XPIN_15, 0);
-  gpio_set(XPIN_20, 0);
   gpio_set(XPIN_8,  0);
   gpio_set(XPIN_6,  0);
 
-  gpio_set(RELAY,           0);
-  gpio_set(LED_GROVE,       0);
-  gpio_set(PWR_CNTRL_RELAY, 0);
-  gpio_set(PWR_CNTRL_LED,   0);
+  gpio_set(RELAY_1, 0);
+  gpio_set(RELAY_2, 0);
+  gpio_set(RELAY_3, 0);
+  gpio_set(RELAY_4, 0);
 
-  printf("> ");
+  /* During startup, we should check the STATUS_* pins in case they have already been driven low (CONTACT CLOSED) */
+  if (!gpio_get(STATUS_1)) {
+    binaryInput.present_value = !gpio_get(STATUS_1);
+    puts("STARTUP check STATUS_1 - CONTACT CLOSED");
+  }
+  if (!gpio_get(STATUS_2)) {
+    binaryInput2.present_value = !gpio_get(STATUS_2);
+    puts("STARTUP check STATUS_2 - CONTACT CLOSED");
+  }
+
+  fputs("> ", stdout);
 
   for (;;) {
 
@@ -506,7 +658,7 @@ void main(void)
       if(option == 49) { /* 1 */
         int16_t request;
         
-        printf("\nRequesting Operating PAN ID (OP)\n");
+        puts("\nRequesting Operating PAN ID (OP)");
         request = xbee_cmd_create(&xdev, "OP");
         if (request < 0) {
 		      printf( "Error creating request: %d (%" PRIsFAR ") \n", request, strerror( -request));
@@ -518,28 +670,28 @@ void main(void)
       }
       else if(option == 50) { /* 2 */
         // Additionnal XBee settings
-        printf("\n Setting additional radio settings: ZS ");
+        fputs("\n Setting additional radio settings: ZS ", stdout);
         xbee_cmd_simple(&xdev, "ZS", XBEE_PARAM_ZS);
-        printf("NJ ");
+        fputs("NJ ", stdout);
         xbee_cmd_simple(&xdev, "NJ", XBEE_PARAM_NJ);
-        printf("NH ");
+        fputs("NH ", stdout);
         xbee_cmd_simple(&xdev, "NH", XBEE_PARAM_NH);
-        printf("NO ");
+        fputs("NO ", stdout);
         xbee_cmd_simple(&xdev, "NO", XBEE_PARAM_NO);
-        printf("EE ");
+        fputs("EE ", stdout);
         xbee_cmd_simple(&xdev, "EE", XBEE_PARAM_EE);
-        printf("EO ");
+        fputs("EO ", stdout);
         xbee_cmd_simple(&xdev, "EO", XBEE_PARAM_EO);
-        printf("AP ");
+        fputs("AP ", stdout);
         xbee_cmd_simple(&xdev, "AP", XBEE_PARAM_AP);
-        printf("KY ");
+        fputs("KY ", stdout);
         xbee_cmd_execute(&xdev, "KY", XBEE_PARAM_KY, (sizeof(XBEE_PARAM_KY) - 1) / sizeof(char));
-        printf("WR ");
+        fputs("WR ", stdout);
         xbee_cmd_execute(&xdev, "WR", NULL, 0);
-        printf("Done!\n\n");
+        puts("Done!\n");
       }
       else if(option == 48) { /* 0 */
-        printf("\n Resetting Network\n");
+        puts("\n Resetting Network");
         xbee_cmd_simple(&xdev, "NR", 0);
       }
       else if(option == 98 || option == 66) { /* b || B */
@@ -549,15 +701,9 @@ void main(void)
 
       }
       else {
-        puts("-------------------------------------");
-        puts("|              H E L P              |");
-        puts("-------------------------------------");
-        puts("[1] - Print Operating PAN ID");
-        puts("[2] - Init additional radio settings");
-        puts("[0] - Local network reset");
-        puts("");
+        puts("---------------H E L P---------------\n[1] - Print Operating PAN ID\n[2] - Init additional radio settings\n[0] - Local network reset\n");
       }
-      printf("> ");
+      fputs("> ", stdout);
     }
     /* End of interactive menu */
 
@@ -566,17 +712,56 @@ void main(void)
   }
 }
 
-int trigger(void) {
-  printf("Trigger!\n");
-  gpio_set(RELAY,   0);
-  gpio_set(RELAY_2, 0);
+int trigger(uint8_t endpoint) {
+  puts("Trigger!");
 
-  if(timer_config(relayTimer, TRUE, ONE_SHOT, 125000) == 0) {
-    gpio_set(RELAY,   1);
-    gpio_set(RELAY_2, 1);
+  if(timer_config(relayTimer, TRUE, ONE_SHOT, RELAY_TIMER) == 0) {
+    if(endpoint == CUSTOM_ENDPOINT) {
+      gpio_set(RELAY_1, 1);
+    }
+    else if(endpoint == CUSTOM_ENDPOINT2) {
+      gpio_set(RELAY_2, 1);
+    }
+    else if(endpoint == CUSTOM_ENDPOINT3) {
+      gpio_set(RELAY_3, 1);
+    }
+    else if(endpoint == CUSTOM_ENDPOINT4) {
+      gpio_set(RELAY_4, 1);
+    }
+    else {
+      puts("Invalid endpoint received for triggering relay, no action taken.");
+    }
     return 0;
   }
   else {
     return -EINVAL;
   }
+}
+
+void send_status(const zcl_binary_input_attr_t *zcl_binin_attr, const wpan_endpoint_table_entry_t *source_endpoint) {
+  // This is meant for device side triggered notifications on state change
+  PACKED_STRUCT request {
+    zcl_header_nomfg_t	header;
+    uint8_t					payload[80];
+  } request;
+  int bytecount;
+  int retval = 0;
+  wpan_envelope_t envelope;
+  const zcl_attribute_base_t *attr_list = &zcl_binin_attr->present_value;
+
+  wpan_envelope_create( &envelope, &xdev.wpan_dev, WPAN_IEEE_ADDR_COORDINATOR, WPAN_NET_ADDR_COORDINATOR);
+  envelope.source_endpoint = source_endpoint->endpoint;
+  envelope.dest_endpoint = 0x01;
+  envelope.cluster_id = CUSTOM_EP_BIN_IN_CLUSTER;
+  envelope.profile_id = CUSTOM_EP_PROFILE;
+  envelope.payload = &request;
+  request.header.frame_control = ZCL_FRAME_SERVER_TO_CLIENT
+                                 | ZCL_FRAME_TYPE_PROFILE
+                                 | ZCL_FRAME_DISABLE_DEF_RESP;
+  request.header.command = ZCL_CMD_REPORT_ATTRIB;
+
+  bytecount = zcl_create_attribute_records(&request.payload, sizeof(request.payload), &attr_list);
+  request.header.sequence = wpan_endpoint_next_trans( source_endpoint );
+  envelope.length = offsetof(struct request, payload) + bytecount;
+  wpan_envelope_send(&envelope);
 }
