@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="9.6.0">
+<eagle version="9.6.2">
 <drawing>
 <settings>
 <setting alwaysvectorfont="no"/>
@@ -8,20 +8,20 @@
 </settings>
 <grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
 <layers>
-<layer number="1" name="Top" color="4" fill="1" visible="no" active="no"/>
-<layer number="16" name="Bottom" color="1" fill="1" visible="no" active="no"/>
-<layer number="17" name="Pads" color="2" fill="1" visible="no" active="no"/>
-<layer number="18" name="Vias" color="2" fill="1" visible="no" active="no"/>
-<layer number="19" name="Unrouted" color="6" fill="1" visible="no" active="no"/>
-<layer number="20" name="Dimension" color="15" fill="1" visible="no" active="no"/>
-<layer number="21" name="tPlace" color="7" fill="1" visible="no" active="no"/>
-<layer number="22" name="bPlace" color="7" fill="1" visible="no" active="no"/>
-<layer number="23" name="tOrigins" color="15" fill="1" visible="no" active="no"/>
-<layer number="24" name="bOrigins" color="15" fill="1" visible="no" active="no"/>
-<layer number="25" name="tNames" color="7" fill="1" visible="no" active="no"/>
-<layer number="26" name="bNames" color="7" fill="1" visible="no" active="no"/>
-<layer number="27" name="tValues" color="7" fill="1" visible="no" active="no"/>
-<layer number="28" name="bValues" color="7" fill="1" visible="no" active="no"/>
+<layer number="1" name="Top" color="4" fill="1" visible="yes" active="no"/>
+<layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="no"/>
+<layer number="17" name="Pads" color="2" fill="1" visible="yes" active="no"/>
+<layer number="18" name="Vias" color="2" fill="1" visible="yes" active="no"/>
+<layer number="19" name="Unrouted" color="6" fill="1" visible="yes" active="no"/>
+<layer number="20" name="Dimension" color="24" fill="1" visible="yes" active="no"/>
+<layer number="21" name="tPlace" color="7" fill="1" visible="yes" active="no"/>
+<layer number="22" name="bPlace" color="7" fill="1" visible="yes" active="no"/>
+<layer number="23" name="tOrigins" color="15" fill="1" visible="yes" active="no"/>
+<layer number="24" name="bOrigins" color="15" fill="1" visible="yes" active="no"/>
+<layer number="25" name="tNames" color="7" fill="1" visible="yes" active="no"/>
+<layer number="26" name="bNames" color="7" fill="1" visible="yes" active="no"/>
+<layer number="27" name="tValues" color="7" fill="1" visible="yes" active="no"/>
+<layer number="28" name="bValues" color="7" fill="1" visible="yes" active="no"/>
 <layer number="29" name="tStop" color="7" fill="3" visible="no" active="no"/>
 <layer number="30" name="bStop" color="7" fill="6" visible="no" active="no"/>
 <layer number="31" name="tCream" color="7" fill="4" visible="no" active="no"/>
@@ -30,8 +30,8 @@
 <layer number="34" name="bFinish" color="6" fill="6" visible="no" active="no"/>
 <layer number="35" name="tGlue" color="7" fill="4" visible="no" active="no"/>
 <layer number="36" name="bGlue" color="7" fill="5" visible="no" active="no"/>
-<layer number="37" name="tTest" color="7" fill="1" visible="no" active="no"/>
-<layer number="38" name="bTest" color="7" fill="1" visible="no" active="no"/>
+<layer number="37" name="tTest" color="7" fill="1" visible="yes" active="no"/>
+<layer number="38" name="bTest" color="7" fill="1" visible="yes" active="no"/>
 <layer number="39" name="tKeepout" color="4" fill="11" visible="no" active="no"/>
 <layer number="40" name="bKeepout" color="1" fill="11" visible="no" active="no"/>
 <layer number="41" name="tRestrict" color="4" fill="10" visible="no" active="no"/>
@@ -39,12 +39,12 @@
 <layer number="43" name="vRestrict" color="2" fill="10" visible="no" active="no"/>
 <layer number="44" name="Drills" color="7" fill="1" visible="no" active="no"/>
 <layer number="45" name="Holes" color="7" fill="1" visible="no" active="no"/>
-<layer number="46" name="Milling" color="3" fill="1" visible="no" active="no"/>
-<layer number="47" name="Measures" color="7" fill="1" visible="no" active="no"/>
-<layer number="48" name="Document" color="7" fill="1" visible="no" active="no"/>
-<layer number="49" name="Reference" color="7" fill="1" visible="no" active="no"/>
-<layer number="51" name="tDocu" color="7" fill="1" visible="no" active="no"/>
-<layer number="52" name="bDocu" color="7" fill="1" visible="no" active="no"/>
+<layer number="46" name="Milling" color="3" fill="1" visible="yes" active="no"/>
+<layer number="47" name="Measures" color="7" fill="1" visible="yes" active="no"/>
+<layer number="48" name="Document" color="7" fill="1" visible="yes" active="no"/>
+<layer number="49" name="Reference" color="7" fill="1" visible="yes" active="no"/>
+<layer number="51" name="tDocu" color="7" fill="1" visible="yes" active="no"/>
+<layer number="52" name="bDocu" color="7" fill="1" visible="yes" active="no"/>
 <layer number="88" name="SimResults" color="9" fill="1" visible="yes" active="yes"/>
 <layer number="89" name="SimProbes" color="9" fill="1" visible="yes" active="yes"/>
 <layer number="90" name="Modules" color="5" fill="1" visible="yes" active="yes"/>
@@ -303,6 +303,53 @@ DIN A4, landscape with location and doc. field</description>
 <wire x1="30.9" y1="4.15" x2="-2.5" y2="4.15" width="0.2" layer="21"/>
 <wire x1="-2.5" y1="4.15" x2="-2.5" y2="0" width="0.2" layer="21"/>
 </package>
+<package name="CAPPRD500W65D1000H1750">
+<description>&lt;b&gt;10Dx16H&lt;/b&gt;&lt;br&gt;
+</description>
+<pad name="1" x="0" y="0" drill="0.85" diameter="1.275" shape="square"/>
+<pad name="2" x="5" y="0" drill="0.85" diameter="1.275"/>
+<text x="0" y="0" size="1.27" layer="25" align="center">&gt;NAME</text>
+<text x="0" y="0" size="1.27" layer="27" align="center">&gt;VALUE</text>
+<circle x="2.5" y="0" radius="5.5" width="0.05" layer="21"/>
+<circle x="2.5" y="0" radius="5" width="0.2" layer="25"/>
+<circle x="2.5" y="0" radius="5" width="0.1" layer="51"/>
+</package>
+<package name="CAPANGLED">
+<description>&lt;b&gt;10Dx16H&lt;/b&gt;&lt;br&gt;
+</description>
+<pad name="1" x="0" y="0" drill="0.85" diameter="1.275" shape="square"/>
+<pad name="2" x="5" y="0" drill="0.85" diameter="1.275"/>
+<text x="2.286" y="4.191" size="1.27" layer="25" align="center">&gt;NAME</text>
+<text x="2.159" y="2.54" size="1.27" layer="27" align="center">&gt;VALUE</text>
+<wire x1="-2.413" y1="1.27" x2="7.493" y2="1.27" width="0.1" layer="21"/>
+<wire x1="7.493" y1="17.272" x2="-2.413" y2="17.272" width="0.1" layer="21"/>
+<wire x1="-2.45" y1="1.27" x2="7.55" y2="1.27" width="0.2" layer="51"/>
+<wire x1="7.55" y1="17.272" x2="-2.45" y2="17.272" width="0.2" layer="51"/>
+<wire x1="-2.413" y1="1.27" x2="-2.54" y2="1.27" width="0.2" layer="21"/>
+<wire x1="-2.54" y1="1.27" x2="-2.54" y2="17.272" width="0.2" layer="21"/>
+<wire x1="-2.54" y1="17.272" x2="-2.413" y2="17.272" width="0.2" layer="21"/>
+<wire x1="7.493" y1="1.27" x2="7.62" y2="1.27" width="0.2" layer="21"/>
+<wire x1="7.62" y1="1.27" x2="7.62" y2="17.272" width="0.2" layer="21"/>
+<wire x1="7.62" y1="17.272" x2="7.493" y2="17.272" width="0.2" layer="21"/>
+</package>
+<package name="CAPANGLED-B">
+<description>&lt;b&gt;10Dx16H&lt;/b&gt;&lt;br&gt;
+</description>
+<pad name="1" x="1.21" y="0" drill="0.85" diameter="1.275" shape="square"/>
+<pad name="2" x="3.75" y="0" drill="0.85" diameter="1.275"/>
+<text x="2.286" y="6.731" size="1.27" layer="25" align="center">&gt;NAME</text>
+<text x="2.159" y="5.08" size="1.27" layer="27" align="center">&gt;VALUE</text>
+<wire x1="-2.413" y1="3.81" x2="7.493" y2="3.81" width="0.1" layer="21"/>
+<wire x1="7.493" y1="19.812" x2="-2.413" y2="19.812" width="0.1" layer="21"/>
+<wire x1="-2.45" y1="3.81" x2="7.55" y2="3.81" width="0.2" layer="51"/>
+<wire x1="7.55" y1="19.812" x2="-2.45" y2="19.812" width="0.2" layer="51"/>
+<wire x1="-2.413" y1="3.81" x2="-2.54" y2="3.81" width="0.2" layer="21"/>
+<wire x1="-2.54" y1="3.81" x2="-2.54" y2="19.812" width="0.2" layer="21"/>
+<wire x1="-2.54" y1="19.812" x2="-2.413" y2="19.812" width="0.2" layer="21"/>
+<wire x1="7.493" y1="3.81" x2="7.62" y2="3.81" width="0.2" layer="21"/>
+<wire x1="7.62" y1="3.81" x2="7.62" y2="19.812" width="0.2" layer="21"/>
+<wire x1="7.62" y1="19.812" x2="7.493" y2="19.812" width="0.2" layer="21"/>
+</package>
 </packages>
 <symbols>
 <symbol name="DF005M">
@@ -406,6 +453,26 @@ DIN A4, landscape with location and doc. field</description>
 <pin name="7" x="0" y="-15.24" length="middle"/>
 <pin name="8" x="0" y="-17.78" length="middle"/>
 <pin name="9" x="0" y="-20.32" length="middle"/>
+</symbol>
+<symbol name="EEU-FM1H221">
+<wire x1="5.08" y1="2.54" x2="5.08" y2="-2.54" width="0.254" layer="94"/>
+<wire x1="5.842" y1="-2.54" x2="5.08" y2="-2.54" width="0.254" layer="94"/>
+<wire x1="5.842" y1="-2.54" x2="5.842" y2="2.54" width="0.254" layer="94"/>
+<wire x1="5.08" y1="2.54" x2="5.842" y2="2.54" width="0.254" layer="94"/>
+<wire x1="4.572" y1="1.27" x2="3.556" y2="1.27" width="0.254" layer="94"/>
+<wire x1="4.064" y1="1.778" x2="4.064" y2="0.762" width="0.254" layer="94"/>
+<wire x1="2.54" y1="0" x2="5.08" y2="0" width="0.254" layer="94"/>
+<wire x1="7.62" y1="0" x2="10.16" y2="0" width="0.254" layer="94"/>
+<text x="8.89" y="6.35" size="1.778" layer="95" align="center-left">&gt;NAME</text>
+<text x="8.89" y="3.81" size="1.778" layer="96" align="center-left">&gt;VALUE</text>
+<pin name="+" x="0" y="0" visible="pad" length="short"/>
+<pin name="-" x="12.7" y="0" visible="pad" length="short" rot="R180"/>
+<polygon width="0.254" layer="94">
+<vertex x="7.62" y="2.54"/>
+<vertex x="7.62" y="-2.54"/>
+<vertex x="6.858" y="-2.54"/>
+<vertex x="6.858" y="2.54"/>
+</polygon>
 </symbol>
 </symbols>
 <devicesets>
@@ -639,6 +706,51 @@ Source: &lt;a href="https://www.molex.com/pdm_docs/sd/395011009_sd.pdf"&gt; Data
 <attribute name="RS_PART_NUMBER" value="" constant="no"/>
 <attribute name="RS_PRICE-STOCK" value="" constant="no"/>
 </technology>
+</technologies>
+</device>
+</devices>
+</deviceset>
+<deviceset name="EEU-FM1H221" prefix="C">
+<description>&lt;b&gt;Panasonic Aluminium Electrolytic Capacitor 220uF 50V dc 10mm Through Hole FM Radial Series +105C&lt;/b&gt;&lt;p&gt;
+Source: &lt;a href="https://componentsearchengine.com/Datasheets/2/EEUFM1H221.pdf"&gt; Datasheet &lt;/a&gt;</description>
+<gates>
+<gate name="G$1" symbol="EEU-FM1H221" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="CAPPRD500W65D1000H1750">
+<connects>
+<connect gate="G$1" pin="+" pad="1"/>
+<connect gate="G$1" pin="-" pad="2"/>
+</connects>
+<technologies>
+<technology name="">
+<attribute name="ARROW_PART_NUMBER" value="EEU-FM1H221" constant="no"/>
+<attribute name="ARROW_PRICE-STOCK" value="https://www.arrow.com/en/products/eeu-fm1h221/panasonic" constant="no"/>
+<attribute name="DESCRIPTION" value="Panasonic Aluminium Electrolytic Capacitor 220uF 50V dc 10mm Through Hole FM Radial Series +105C" constant="no"/>
+<attribute name="HEIGHT" value="17.5mm" constant="no"/>
+<attribute name="MANUFACTURER_NAME" value="Panasonic" constant="no"/>
+<attribute name="MANUFACTURER_PART_NUMBER" value="EEU-FM1H221" constant="no"/>
+<attribute name="MOUSER_PART_NUMBER" value="667-EEU-FM1H221" constant="no"/>
+<attribute name="MOUSER_PRICE-STOCK" value="https://www.mouser.co.uk/ProductDetail/Panasonic/EEU-FM1H221?qs=ngJqVwYVsdUrkqIoZbKrCw%3D%3D" constant="no"/>
+</technology>
+</technologies>
+</device>
+<device name="-A" package="CAPANGLED">
+<connects>
+<connect gate="G$1" pin="+" pad="1"/>
+<connect gate="G$1" pin="-" pad="2"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="-A2" package="CAPANGLED-B">
+<connects>
+<connect gate="G$1" pin="+" pad="1"/>
+<connect gate="G$1" pin="-" pad="2"/>
+</connects>
+<technologies>
+<technology name=""/>
 </technologies>
 </device>
 </devices>
@@ -1338,6 +1450,8 @@ Improvements to the package by Sten Feldman:
 <part name="R4" library="parts" deviceset="RN55D1801FB14" device=""/>
 <part name="J1" library="parts" deviceset="39501-1002" device=""/>
 <part name="J2" library="parts" deviceset="39501-1009" device=""/>
+<part name="C1" library="parts" deviceset="EEU-FM1H221" device="-A" value="EEU-FM1H221-A"/>
+<part name="C2" library="parts" deviceset="EEU-FM1H221" device="-A2" value="EEU-FM1H221-A2"/>
 </parts>
 <sheets>
 <sheet>
@@ -1432,6 +1546,14 @@ Improvements to the package by Sten Feldman:
 <instance part="J2" gate="G$1" x="45.72" y="45.72" smashed="yes" rot="R270">
 <attribute name="NAME" x="48.26" y="29.21" size="1.778" layer="95" rot="R270" align="center-left"/>
 <attribute name="VALUE" x="45.72" y="29.21" size="1.778" layer="96" rot="R270" align="center-left"/>
+</instance>
+<instance part="C1" gate="G$1" x="7.62" y="104.14" smashed="yes">
+<attribute name="NAME" x="16.51" y="110.49" size="1.778" layer="95" align="center-left"/>
+<attribute name="VALUE" x="16.51" y="107.95" size="1.778" layer="96" align="center-left"/>
+</instance>
+<instance part="C2" gate="G$1" x="7.62" y="111.76" smashed="yes">
+<attribute name="NAME" x="16.51" y="118.11" size="1.778" layer="95" align="center-left"/>
+<attribute name="VALUE" x="16.51" y="115.57" size="1.778" layer="96" align="center-left"/>
 </instance>
 </instances>
 <busses>
@@ -1530,20 +1652,33 @@ Improvements to the package by Sten Feldman:
 <label x="193.04" y="86.36" size="1.778" layer="95" rot="R180"/>
 </segment>
 </net>
-<net name="N$10" class="0">
+<net name="VIN-" class="0">
 <segment>
 <pinref part="BR1" gate="G$1" pin="-"/>
 <pinref part="PS1" gate="G$1" pin="-VIN"/>
 <wire x1="12.7" y1="73.66" x2="12.7" y2="99.06" width="0.1524" layer="91"/>
 <wire x1="12.7" y1="99.06" x2="20.32" y2="99.06" width="0.1524" layer="91"/>
+<pinref part="C1" gate="G$1" pin="-"/>
+<wire x1="20.32" y1="104.14" x2="20.32" y2="99.06" width="0.1524" layer="91"/>
+<junction x="20.32" y="99.06"/>
+<pinref part="C2" gate="G$1" pin="-"/>
+<wire x1="20.32" y1="111.76" x2="20.32" y2="104.14" width="0.1524" layer="91"/>
+<junction x="20.32" y="104.14"/>
 </segment>
 </net>
-<net name="N$11" class="0">
+<net name="VIN+" class="0">
 <segment>
 <pinref part="BR1" gate="G$1" pin="+"/>
 <pinref part="PS1" gate="G$1" pin="+VIN"/>
 <wire x1="15.24" y1="73.66" x2="15.24" y2="96.52" width="0.1524" layer="91"/>
 <wire x1="15.24" y1="96.52" x2="20.32" y2="96.52" width="0.1524" layer="91"/>
+<pinref part="C1" gate="G$1" pin="+"/>
+<wire x1="7.62" y1="104.14" x2="7.62" y2="96.52" width="0.1524" layer="91"/>
+<wire x1="7.62" y1="96.52" x2="15.24" y2="96.52" width="0.1524" layer="91"/>
+<junction x="15.24" y="96.52"/>
+<pinref part="C2" gate="G$1" pin="+"/>
+<wire x1="7.62" y1="111.76" x2="7.62" y2="104.14" width="0.1524" layer="91"/>
+<junction x="7.62" y="104.14"/>
 </segment>
 </net>
 <net name="COM1" class="0">
