@@ -7883,7 +7883,7 @@ design rules under a new name.</description>
 <attribute name="VALUE" x="37.453" y="55.264" size="1.27" layer="28" rot="MR0" align="center"/>
 </element>
 <element name="JP1" library="SparkFun-Connectors" library_urn="urn:adsk.eagle:library:513" package="6_PIN_SERIAL_TARGET_SIDE_W_SILK" package3d_urn="urn:adsk.eagle:package:37995/1" value="" x="37.492" y="44.889" smashed="yes" rot="MR180">
-<attribute name="NAME" x="29.7958" y="43.0602" size="1.27" layer="26" ratio="10" rot="MR180"/>
+<attribute name="NAME" x="29.7958" y="42.0602" size="1.27" layer="26" ratio="10" rot="MR180"/>
 <attribute name="VALUE" x="29.872" y="48.064" size="1.27" layer="28" rot="MR180"/>
 </element>
 </elements>
@@ -7974,13 +7974,6 @@ design rules under a new name.</description>
 <vertex x="0" y="57"/>
 </polygon>
 <contactref element="JP1" pad="P$6"/>
-<wire x1="27.354" y1="30.513" x2="43.842" y2="44.889" width="0" layer="19" extent="1-1"/>
-<wire x1="22.631" y1="32" x2="27.354" y2="30.513" width="0" layer="19" extent="1-1"/>
-<wire x1="14.868" y1="32" x2="22.631" y2="32" width="0" layer="19" extent="1-1"/>
-<wire x1="7.158" y1="32" x2="14.868" y2="32" width="0" layer="19" extent="1-1"/>
-<wire x1="22.095" y1="40.056" x2="22.631" y2="32" width="0" layer="19" extent="1-1"/>
-<wire x1="27.83" y1="16.273" x2="27.354" y2="30.513" width="0" layer="19" extent="1-1"/>
-<wire x1="7.465" y1="4.222" x2="27.83" y2="16.273" width="0" layer="19" extent="1-1"/>
 </signal>
 <signal name="N$1">
 <contactref element="R1" pad="1"/>
