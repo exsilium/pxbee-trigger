@@ -694,11 +694,27 @@ void main(void)
         puts("\n Resetting Network");
         xbee_cmd_simple(&xdev, "NR", 0);
       }
-      else if(option == 98 || option == 66) { /* b || B */
-        sys_app_banner();
+      else if(option == 105 || option == 73) { /* i || I */
+        trigger(CUSTOM_ENDPOINT);
+      }
+      else if(option == 106 || option == 74) { /* j || J */
+        trigger(CUSTOM_ENDPOINT2);
+      }
+      else if(option == 107 || option == 75) { /* k || K */
+        trigger(CUSTOM_ENDPOINT3);
+      }
+      else if(option == 108 || option == 76) { /* l || L */
+        trigger(CUSTOM_ENDPOINT4);
       }
       else if(option == 104 || option == 72) { /* h || H */
 
+      }
+      else if(option == 115 || option == 83) { /* s || S */
+        /* Power on UART1 & 2 (SCI) and turn off everything else */
+        _SCGC1.Byte = SCGC1_SCI1_MASK | SCGC1_SCI2_MASK ;
+        _SCGC2.Byte = 0;
+        DoPassThroughMode();
+        break;
       }
       else {
         puts("---------------H E L P---------------\n[1] - Print Operating PAN ID\n[2] - Init additional radio settings\n[0] - Local network reset\n");

@@ -9,7 +9,7 @@
 #define __XBEE_CONFIG_H_
 
 /* Project definitions */
-#define APP_VERSION_STRING              "Trigger v0.2.0-WIP"
+#define APP_VERSION_STRING              "Trigger v0.4.0-SNAPSHOT"
 #define CONFIG_XBEE_ZB
 #define CONFIG_XBEE_THT
 #define CONFIG_XBEE_S2CTH
@@ -41,7 +41,7 @@
 /* uart0 component */
 #define ENABLE_UART
 #define UART_CFG_MODE_2W                1
-#define UART_CFG_BAUDRATE               115200
+#define UART_CFG_BAUDRATE               9600
 #define UART_CFG_PAR_EN                 UART_CFG_PARITY_DIS
 #define UART_CFG_PAR_VAL                UART_CFG_PARITY_ODD
 #define UART_CFG_BITS                   UART_CFG_BITS_8
@@ -55,21 +55,9 @@
 #define XBEE_ATCMD_PARAM_NI             "PROGRAMMABLE TEST 2-WIP"
 
 /* STATUS_1 pin */
-#define ENABLE_GPIO_IRQ_XPIN_18
-#define STATUS_1                        XPIN_18
-#define status_1_irq                    gpio_irq_handler_xpin_18
-#define GPIO_CFG_IRQ_MODE_18            GPIO_CFG_EDGE_IRQ
-#define GPIO_IRQ_LEVEL_EDGE_18          GPIO_IRQ_EDGE_FALL
-#define GPIO_IRQ_CFG_PULL_18            GPIO_IRQ_CFG_PULL_HIGH
-#define orPD18                          shift_xpin_18
-#define andPD18                         ~0
-#define orPR18                          shift_xpin_18
-#define andPR18                         ~0
-
-/* STATUS_2 pin */
 #define ENABLE_GPIO_IRQ_XPIN_19
-#define STATUS_2                        XPIN_19
-#define status_2_irq                    gpio_irq_handler_xpin_19
+#define STATUS_1                        XPIN_19
+#define status_1_irq                    gpio_irq_handler_xpin_19
 #define GPIO_CFG_IRQ_MODE_19            GPIO_CFG_EDGE_IRQ
 #define GPIO_IRQ_LEVEL_EDGE_19          GPIO_IRQ_EDGE_FALL
 #define GPIO_IRQ_CFG_PULL_19            GPIO_IRQ_CFG_PULL_HIGH
@@ -77,6 +65,18 @@
 #define andPD19                         ~0
 #define orPR19                          shift_xpin_19
 #define andPR19                         ~0
+
+/* STATUS_2 pin */
+#define ENABLE_GPIO_IRQ_XPIN_18
+#define STATUS_2                        XPIN_18
+#define status_2_irq                    gpio_irq_handler_xpin_18
+#define GPIO_CFG_IRQ_MODE_18            GPIO_CFG_EDGE_IRQ
+#define GPIO_IRQ_LEVEL_EDGE_18          GPIO_IRQ_EDGE_FALL
+#define GPIO_IRQ_CFG_PULL_18            GPIO_IRQ_CFG_PULL_HIGH
+#define orPD18                          shift_xpin_18
+#define andPD18                         ~0
+#define orPR18                          shift_xpin_18
+#define andPR18                         ~0
 
 /* RELAY_1 pin */
 #define ENABLE_GPIO_XPIN_7
