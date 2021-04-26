@@ -46,8 +46,8 @@
  *   XPIN15 = special0 [Association Pin]
  *   XPIN16 = <<UNUSED>>
  *   XPIN17 = <<UNUSED>>
- *   XPIN18 = Status pin 1 [IRQ Pin] (Pulled UP)
- *   XPIN19 = Status pin 2 [IRQ Pin] (Pulled UP)
+ *   XPIN18 = Status pin 2 [IRQ Pin] (Pulled UP)
+ *   XPIN19 = Status pin 1 [IRQ Pin] (Pulled UP)
  *   XPIN20 = <<UNUSED>>
  *
  ************************************/
@@ -657,7 +657,7 @@ void main(void)
       printf("Got char: %u\n", option);
       if(option == 49) { /* 1 */
         int16_t request;
-        
+
         puts("\nRequesting Operating PAN ID (OP)");
         request = xbee_cmd_create(&xdev, "OP");
         if (request < 0) {
