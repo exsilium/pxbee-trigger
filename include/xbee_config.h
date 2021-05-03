@@ -151,13 +151,13 @@
 #define relayTimer_irq                  tpm1ov_irq
 #define ENABLE_TPM1
 
-/* status_1_CheckTimer component (XPIN18) */
+/* status_1_CheckTimer component (XPIN19) */
 #define status_1_CheckTimer             TPM2
 #define TPM2_OVERFLOW_INTERRUPT
 #define status_1_CheckTimer_irq         tpm2ov_irq
 #define ENABLE_TPM2
 
-/* status_2_CheckTimer component (XPIN19) */
+/* status_2_CheckTimer component (XPIN18) */
 #define status_2_CheckTimer             TPM3
 #define TPM3_OVERFLOW_INTERRUPT
 #define status_2_CheckTimer_irq         tpm3ov_irq
