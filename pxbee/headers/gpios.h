@@ -81,6 +81,7 @@
  *	
  *		- Macros to configure the \b active \b edge (when the detection 
  *		  mode is configured as \b edge):
+ *			- \b GPIO_IRQ_EDGE_BOTH			: Select fall and rise edge - \b 2.
  *			- \b GPIO_IRQ_EDGE_RISE 		: Select the rise-edge mode - \b 1.
  *			- \b GPIO_IRQ_EDGE_FALL 		: Select the fall-edge mode - \b 0.
  *	
@@ -116,6 +117,7 @@
 #define GPIO_CFG_LEVEL_IRQ			0
 #define GPIO_CFG_EDGE_IRQ			1
 
+#define GPIO_IRQ_EDGE_BOTH			(2)
 #define GPIO_IRQ_EDGE_RISE			(1)
 #define GPIO_IRQ_EDGE_FALL			(0)
 #define GPIO_IRQ_LEVEL_HIGH			(1)
@@ -377,7 +379,7 @@ extern void gpio_irq_handler_xpin_33(void);
 /* GPIO functions */
 void gpio_irq_enable(bool_t enable);
 int gpio_enable_xpin_irq(xpin_t pin, bool_t enable);
-int gpio_config_irq(xpin_t pin, bool_t type, bool_t edge);
+int gpio_config_irq(xpin_t pin, bool_t type, uint8_t edge);
 void gpio_set(xpin_t pin, bool_t val);
 bool_t gpio_get(xpin_t pin);
 int gpio_config(xpin_t pin, uint8_t cfg);
