@@ -51,15 +51,15 @@
 
 /* xbee_config0 component */
 //#define XBEE_ATCMD_PARAM_ID             "0123456789ABCDEF"
-#define XBEE_ATCMD_PARAM_SC             0x200  // Only scan Channel 20 (0x14)
-#define XBEE_ATCMD_PARAM_NI             "PROGRAMMABLE TEST 2-WIP"
+#define XBEE_ATCMD_PARAM_SC             0x2000  // Only scan Channel 24 (0x18) Keep 0x7FFF for default scan
+#define XBEE_ATCMD_PARAM_NI             "PROGRAMMABLE TEST 3W"
 
 /* STATUS_1 pin */
 #define ENABLE_GPIO_IRQ_XPIN_19
 #define STATUS_1                        XPIN_19
 #define status_1_irq                    gpio_irq_handler_xpin_19
 #define GPIO_CFG_IRQ_MODE_19            GPIO_CFG_EDGE_IRQ
-#define GPIO_IRQ_LEVEL_EDGE_19          GPIO_IRQ_EDGE_FALL
+#define GPIO_IRQ_LEVEL_EDGE_19          GPIO_IRQ_EDGE_BOTH
 #define GPIO_IRQ_CFG_PULL_19            GPIO_IRQ_CFG_PULL_HIGH
 #define orPD19                          shift_xpin_19
 #define andPD19                         ~0
@@ -71,7 +71,7 @@
 #define STATUS_2                        XPIN_18
 #define status_2_irq                    gpio_irq_handler_xpin_18
 #define GPIO_CFG_IRQ_MODE_18            GPIO_CFG_EDGE_IRQ
-#define GPIO_IRQ_LEVEL_EDGE_18          GPIO_IRQ_EDGE_FALL
+#define GPIO_IRQ_LEVEL_EDGE_18          GPIO_IRQ_EDGE_BOTH
 #define GPIO_IRQ_CFG_PULL_18            GPIO_IRQ_CFG_PULL_HIGH
 #define orPD18                          shift_xpin_18
 #define andPD18                         ~0

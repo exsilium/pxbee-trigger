@@ -46,8 +46,8 @@
  *   XPIN15 = special0 [Association Pin]
  *   XPIN16 = <<UNUSED>>
  *   XPIN17 = <<UNUSED>>
- *   XPIN18 = Status pin 2 [IRQ Pin] (Pulled UP)
- *   XPIN19 = Status pin 1 [IRQ Pin] (Pulled UP)
+ *   XPIN18 = Status pin 2 [IRQ Pin] (Pulled UP) (KBI1PE_KBIPE6_XPIN)
+ *   XPIN19 = Status pin 1 [IRQ Pin] (Pulled UP) (KBI1PE_KBIPE3_XPIN)
  *   XPIN20 = <<UNUSED>>
  *
  ************************************/
@@ -55,6 +55,7 @@
 #include <xbee_config.h>
 #include <types.h>
 #include <util.h>
+#include <timer.h>
 
 // Custom profile and cluster implementation
 #define CUSTOM_EP_BASIC_CLUSTER    0x0000
@@ -76,12 +77,7 @@ wpan_ep_state_t custom_ha_ep3_state;
 wpan_ep_state_t custom_ha_ep4_state;
 
 /* STATUS_* Pins */
-bool_t status_1_TimerSet = FALSE;
-bool_t status_1_InterruptFree = TRUE;
-bool_t status_1_SendStatus = TRUE;
-bool_t status_2_TimerSet = FALSE;
-bool_t status_2_InterruptFree = TRUE;
-bool_t status_2_SendStatus = TRUE;
+uint8_t status_1_Counter = 0;
 
 int trigger(uint8_t endpoint);
 int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *context);
@@ -117,6 +113,12 @@ const wpan_cluster_table_entry_t custom_ep4_clusters[] = {
   WPAN_CLUST_ENTRY_LIST_END
 };
 
+const wpan_cluster_table_entry_t custom_ep5_clusters[] = {
+  {CUSTOM_EP_BASIC_CLUSTER, NULL, NULL, WPAN_CLUST_FLAG_INPUT},
+  {CUSTOM_EP_BIN_IN_CLUSTER, custom_ep_rx_binary_input_cluster, NULL, WPAN_CLUST_FLAG_INPUT},
+  WPAN_CLUST_ENTRY_LIST_END
+};
+
 typedef struct zcl_binary_input_attr_t {
   zcl_attribute_base_t		active_text;
   zcl_attribute_base_t		description;
@@ -139,14 +141,14 @@ typedef struct zcl_binary_input_t {
 
 zcl_binary_input_t binaryInput = { ZCL_BOOL_FALSE, ZCL_BOOL_FALSE };
 const zcl_binary_input_attr_t FAR zcl_binin_attributes = {
-		{	ZCL_BININ_ATTR_ACTIVE_TEXT,	   ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_STRING_CHAR,	"BinIn ON" },
-		{	ZCL_BININ_ATTR_DESCRIPTION,	   ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_STRING_CHAR,	"BinIn Description" },
-		{	ZCL_BININ_ATTR_INACTIVE_TEXT,	 ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_STRING_CHAR,	"BinIn OFF" },
-		{	ZCL_BININ_ATTR_OUT_OF_SERVICE, ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_LOGICAL_BOOLEAN, &binaryInput.out_of_service },
-		{	ZCL_BININ_ATTR_PRESENT_VALUE,	 ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_LOGICAL_BOOLEAN, &binaryInput.present_value	},
-		ZCL_ATTRIBUTE_END_OF_LIST };
-const zcl_attribute_tree_t FAR zcl_binin_attribute_tree[] =										\
-		{ { ZCL_MFG_NONE, &zcl_binin_attributes.active_text, NULL } };
+	{	ZCL_BININ_ATTR_ACTIVE_TEXT,	   ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_STRING_CHAR,	"BinIn ON" },
+	{	ZCL_BININ_ATTR_DESCRIPTION,	   ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_STRING_CHAR,	"BinIn Description" },
+	{	ZCL_BININ_ATTR_INACTIVE_TEXT,	 ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_STRING_CHAR,	"BinIn OFF" },
+	{	ZCL_BININ_ATTR_OUT_OF_SERVICE, ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_LOGICAL_BOOLEAN, &binaryInput.out_of_service },
+	{	ZCL_BININ_ATTR_PRESENT_VALUE,	 ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_LOGICAL_BOOLEAN, &binaryInput.present_value	},
+	ZCL_ATTRIBUTE_END_OF_LIST };
+const zcl_attribute_tree_t FAR zcl_binin_attribute_tree[] =	\
+	{ { ZCL_MFG_NONE, &zcl_binin_attributes.active_text, NULL } };
 
 zcl_binary_input_t binaryInput2 = { ZCL_BOOL_FALSE, ZCL_BOOL_FALSE };
 const zcl_binary_input_attr_t FAR zcl_binin_attributes2 = {
@@ -156,8 +158,19 @@ const zcl_binary_input_attr_t FAR zcl_binin_attributes2 = {
   {	ZCL_BININ_ATTR_OUT_OF_SERVICE, ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_LOGICAL_BOOLEAN, &binaryInput2.out_of_service },
   {	ZCL_BININ_ATTR_PRESENT_VALUE,	 ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_LOGICAL_BOOLEAN, &binaryInput2.present_value	},
   ZCL_ATTRIBUTE_END_OF_LIST };
-const zcl_attribute_tree_t FAR zcl_binin_attribute_tree2[] =										\
-		{ { ZCL_MFG_NONE, &zcl_binin_attributes2.active_text, NULL } };
+const zcl_attribute_tree_t FAR zcl_binin_attribute_tree2[] =  \
+	{ { ZCL_MFG_NONE, &zcl_binin_attributes2.active_text, NULL } };
+
+zcl_binary_input_t binaryInput3 = { ZCL_BOOL_FALSE, ZCL_BOOL_FALSE };
+const zcl_binary_input_attr_t FAR zcl_binin_attributes3 = {
+  { ZCL_BININ_ATTR_ACTIVE_TEXT,    ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_STRING_CHAR,  "BinIn Operating" },
+  { ZCL_BININ_ATTR_DESCRIPTION,    ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_STRING_CHAR,  "BinIn Description" },
+  { ZCL_BININ_ATTR_INACTIVE_TEXT,  ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_STRING_CHAR,  "BinIn NOP" },
+  { ZCL_BININ_ATTR_OUT_OF_SERVICE, ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_LOGICAL_BOOLEAN, &binaryInput3.out_of_service },
+  { ZCL_BININ_ATTR_PRESENT_VALUE,  ZCL_ATTRIB_FLAG_READONLY, ZCL_TYPE_LOGICAL_BOOLEAN, &binaryInput3.present_value  },
+  ZCL_ATTRIBUTE_END_OF_LIST };
+const zcl_attribute_tree_t FAR zcl_binin_attribute_tree3[] = \
+  { { ZCL_MFG_NONE, &zcl_binin_attributes3.active_text, NULL } };
 
 void send_status(const zcl_binary_input_attr_t *zcl_binin_attr, const wpan_endpoint_table_entry_t *source_endpoint);
 
@@ -166,8 +179,6 @@ int custom_ep_basic_cluster(const wpan_envelope_t FAR *envelope, void FAR *conte
   puts("\n=== CUSTOM ENDPOINT'S DEFAULT CLUSTER HANDLER ===");
   puts("Building ZCL Command based on received envelope: ");
   if(zcl_command_build(&zcl, envelope, context) == 0) {
-    wpan_envelope_dump(envelope);
-
     if(ZCL_CMD_MATCH( &zcl.frame_control, GENERAL, CLIENT_TO_SERVER, PROFILE)) {
       if(zcl.command == ZCL_CMD_READ_ATTRIB && zcl.length == 2) {
         const char FAR *zclPayload = zcl.zcl_payload;
@@ -182,6 +193,7 @@ int custom_ep_basic_cluster(const wpan_envelope_t FAR *envelope, void FAR *conte
         start_response = (uint8_t *)&response + zcl_build_header(&response.header, &zcl);
         end_response = response.buffer;
 
+        sys_watchdog_reset();
         if(zclPayload[0] == 0x01 && zclPayload[1] == 0x00) {
           /* Application version request */
           puts("Handling response for Application version request");
@@ -191,6 +203,7 @@ int custom_ep_basic_cluster(const wpan_envelope_t FAR *envelope, void FAR *conte
           *end_response++ = 0x20;
           *end_response++ = 0x00;
 
+          sys_watchdog_reset();
           if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
             puts("Response sent successfully");
           }
@@ -204,6 +217,7 @@ int custom_ep_basic_cluster(const wpan_envelope_t FAR *envelope, void FAR *conte
           *end_response++ = 0x42;
           end_response = appendStringChar(end_response, ZCL_MANUFACTURER);
 
+          sys_watchdog_reset();
           if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
             puts("Response sent successfully");
           }
@@ -217,6 +231,7 @@ int custom_ep_basic_cluster(const wpan_envelope_t FAR *envelope, void FAR *conte
           *end_response++ = 0x42;
           end_response = appendStringChar(end_response, ZCL_MODEL);
 
+          sys_watchdog_reset();
           if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
             puts("Response sent successfully");
           }
@@ -229,7 +244,7 @@ int custom_ep_basic_cluster(const wpan_envelope_t FAR *envelope, void FAR *conte
   }
 
   puts("=====================================================================\n");
-
+  sys_watchdog_reset();
   return 0;
 }
 
@@ -245,12 +260,14 @@ int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *c
   puts("\n=== CUSTOM ENDPOINT HANDLER - ON OFF CLUSTER ===");
   //wpan_envelope_dump(envelope);
   //puts("Building ZCL Command based on received envelope: ");
+  sys_watchdog_reset();
   if(zcl_command_build(&zcl, envelope, context) == 0) {
     //zcl_command_dump(&zcl);
     //puts("----------------------");
     // Handle all the commands
-
+    sys_watchdog_reset();
     if(ZCL_CMD_MATCH(&zcl.frame_control, GENERAL, CLIENT_TO_SERVER, PROFILE)) {
+      sys_watchdog_reset();
       if(zcl.command == ZCL_CMD_READ_ATTRIB) {
         // Profile command received (Read attribute) for switch state
         puts("Handling response for switch state read");
@@ -265,6 +282,7 @@ int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *c
         *end_response++ = ZCL_TYPE_LOGICAL_BOOLEAN;
         *end_response++ = 0x00; // Always return off state
 
+        sys_watchdog_reset();
         if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
           puts("Response sent successfully\n");
         }
@@ -282,12 +300,13 @@ int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *c
         *end_response++ = 0x00;
         *end_response++ = 0x00;
 
+        sys_watchdog_reset();
         if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
           puts("Response sent successfully\n");
         }
       }
       else {
-        puts("Unhandled Profile command received");
+        puts("ONOFF> Unhandled Profile command received");
       }
     }
     else if(ZCL_CMD_MATCH(&zcl.frame_control, GENERAL, CLIENT_TO_SERVER, CLUSTER)) {
@@ -319,6 +338,7 @@ int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *c
            */
           response.header.command = ZCL_CMD_REPORT_ATTRIB;
           response.header.sequence++;
+          response.header.u.std.frame_control = ZCL_FRAME_TYPE_PROFILE | ZCL_FRAME_SERVER_TO_CLIENT;
 
           start_response = (uint8_t *)&response + 2;
           end_response = response.buffer;
@@ -328,6 +348,7 @@ int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *c
           *end_response++ = ZCL_TYPE_LOGICAL_BOOLEAN;
           *end_response++ = 0x01; // Report On state
 
+          sys_watchdog_reset();
           if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
             puts("On response sent successfully");
           }
@@ -346,6 +367,7 @@ int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *c
 
       response.header.command = ZCL_CMD_REPORT_ATTRIB;
       response.header.sequence++;
+      response.header.u.std.frame_control = ZCL_FRAME_TYPE_PROFILE | ZCL_FRAME_SERVER_TO_CLIENT;
 
       start_response = (uint8_t *)&response + 2;
       end_response = response.buffer;
@@ -355,6 +377,7 @@ int custom_ep_rx_on_off_cluster(const wpan_envelope_t FAR *envelope, void FAR *c
       *end_response++ = ZCL_TYPE_LOGICAL_BOOLEAN;
       *end_response++ = 0x00; // Report Off state
 
+      sys_watchdog_reset();
       if(zcl_send_response(&zcl, start_response, end_response - start_response) == 0) {
         puts("Off response sent successfully\n");
       }
@@ -380,13 +403,15 @@ int custom_ep_rx_binary_input_cluster(const wpan_envelope_t FAR *envelope, void 
   puts("\n=== CUSTOM ENDPOINT HANDLER - BINARY INPUT CLUSTER ===");
   //wpan_envelope_dump(envelope);
   //puts("Building ZCL Command based on received envelope: ");
+  sys_watchdog_reset();
   if(zcl_command_build(&zcl_binin, envelope, context) == 0) {
     //zcl_command_dump(&zcl_binin);
     //puts("----------------------");
     // Handle all the commands
-
+    sys_watchdog_reset();
     if (ZCL_CMD_MATCH(&zcl_binin.frame_control, GENERAL, CLIENT_TO_SERVER, PROFILE))
     {
+      sys_watchdog_reset();
       if (zcl_binin.command == ZCL_CMD_READ_ATTRIB)
       {
         // Profile command received (Read attribute) for switch state
@@ -407,6 +432,9 @@ int custom_ep_rx_binary_input_cluster(const wpan_envelope_t FAR *envelope, void 
         else if(zcl_binin.envelope->dest_endpoint == CUSTOM_ENDPOINT2) {
           *end_response++ = binaryInput2.present_value;
         }
+        else if(zcl_binin.envelope->dest_endpoint == CUSTOM_ENDPOINT5) {
+          *end_response++ = binaryInput3.present_value;
+        }
         else {
           *end_response++ = ZCL_BOOL_FALSE;
         }
@@ -425,20 +453,9 @@ int custom_ep_rx_binary_input_cluster(const wpan_envelope_t FAR *envelope, void 
 
 int custom_ep_rx_notimpl_cluster(const wpan_envelope_t FAR *envelope, void FAR *context)
 {
-  uint8_t                 *start_response;
-  uint8_t									*end_response;
-  PACKED_STRUCT {
-    zcl_header_response_t	header;
-    uint8_t								buffer[20];
-  } response;
-
   puts("\n=== NOTIMPL CLUSTER HANDLER ===");
   wpan_envelope_dump(envelope);
-  puts("Building ZCL Command based on received envelope: ");
-  if(zcl_command_build(&zcl, envelope, context) == 0) {
-    zcl_command_dump(&zcl);
-    puts("----------------------");
-  }
+  sys_watchdog_reset();
   return 0;
 }
 // END: Custom profile and cluster implementation
@@ -544,78 +561,65 @@ void rtc_periodic_task(void)
 void relayTimer_irq(void)
 {
   puts("EVENT TRIGGERED: relayTimer_irq");
+
   gpio_set(RELAY_1,   0);
   gpio_set(RELAY_2,   0);
   gpio_set(RELAY_3,   0);
   gpio_set(RELAY_4,   0);
+  sys_watchdog_reset();
 }
 #endif
 
 #ifdef status_1_CheckTimer_irq
 void status_1_CheckTimer_irq(void) {
-  if (!((!gpio_get(STATUS_1)) ^ binaryInput.present_value) && status_1_SendStatus) {
-    puts("EVENT TRIGGERED: status_1_irq (CONTACT CLOSED)");
-    send_status(&zcl_binin_attributes, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT, CUSTOM_EP_PROFILE));
-    status_1_SendStatus = FALSE;
-  }
-  else if(gpio_get(STATUS_1) && !status_1_SendStatus) {
-    puts("EVENT TRIGGERED: status_1_irq (CONTACT OPEN)");
-    binaryInput.present_value = ZCL_BOOL_FALSE;
-    send_status(&zcl_binin_attributes, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT, CUSTOM_EP_PROFILE));
-    status_1_SendStatus = TRUE;
-    status_1_TimerSet = FALSE;
-    timer_enable(status_1_CheckTimer, FALSE);
-  }
+  status_1_Counter = 0;
+  /* We only read back the gpio value on timer expiration */
+  binaryInput.present_value = !gpio_get(STATUS_1);
+  sys_watchdog_reset();
+  send_status(&zcl_binin_attributes, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT, CUSTOM_EP_PROFILE));
+  sys_watchdog_reset();
+  binaryInput3.present_value = FALSE;
+  send_status(&zcl_binin_attributes3, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT5, CUSTOM_EP_PROFILE));
+  sys_watchdog_reset();
 }
 #endif
 
 #ifdef status_2_CheckTimer_irq
 void status_2_CheckTimer_irq(void) {
-  if (!((!gpio_get(STATUS_2)) ^ binaryInput2.present_value) && status_2_SendStatus) {
-    puts("EVENT TRIGGERED: status_2_irq (CONTACT CLOSED)");
-    send_status(&zcl_binin_attributes2, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT2, CUSTOM_EP_PROFILE));
-    status_2_SendStatus = FALSE;
-  }
-  else if(gpio_get(STATUS_2) && !status_2_SendStatus) {
-    puts("EVENT TRIGGERED: status_2_irq (CONTACT OPEN)");
-    binaryInput2.present_value = ZCL_BOOL_FALSE;
-    send_status(&zcl_binin_attributes2, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT2, CUSTOM_EP_PROFILE));
-    status_2_SendStatus = TRUE;
-    status_2_TimerSet = FALSE;
-    timer_enable(status_2_CheckTimer, FALSE);
-  }
+  binaryInput2.present_value = !gpio_get(STATUS_2);
+  sys_watchdog_reset();
+  send_status(&zcl_binin_attributes2, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT2, CUSTOM_EP_PROFILE));
+  sys_watchdog_reset();
 }
 #endif
 
 #ifdef status_1_irq
 void status_1_irq(void)
 {
-  if(status_1_InterruptFree) {
-    status_1_InterruptFree = FALSE;
-    if(!status_1_TimerSet) {
-      binaryInput.present_value = !gpio_get(STATUS_1);
-      if(timer_config(status_1_CheckTimer, TRUE, PERIODIC, DEBOUNCE_TIMER) == 0) {
-        status_1_TimerSet = TRUE;
-      }
-    }
-    status_1_InterruptFree = TRUE;
+  gpio_enable_xpin_irq(STATUS_1, FALSE);
+  puts("STATUS_1: ISR");
+  if(TPM2SC_TOIE) {
+    /* Timer has been already enabled */
+    status_1_Counter++;
   }
+  if(status_1_Counter == STATUS_OSC_COUNT) {
+    /* We notify / send status for 3rd State (OPERATING) */
+    puts("STATUS_1 ISR: State change detected - OPERATING.");
+    binaryInput3.present_value = TRUE;
+    sys_watchdog_reset();
+    send_status(&zcl_binin_attributes3, wpan_endpoint_match(&xdev.wpan_dev, CUSTOM_ENDPOINT5, CUSTOM_EP_PROFILE));
+    sys_watchdog_reset();
+  }
+  timer_config(status_1_CheckTimer, TRUE, ONE_SHOT, STATUS_TIMER);
 }
 #endif
 
 #ifdef status_2_irq
 void status_2_irq(void)
 {
-  if(status_2_InterruptFree) {
-    status_2_InterruptFree = FALSE;
-    if(!status_2_TimerSet) {
-      binaryInput2.present_value = !gpio_get(STATUS_2);
-      if(timer_config(status_2_CheckTimer, TRUE, PERIODIC, DEBOUNCE_TIMER) == 0) {
-        status_2_TimerSet = TRUE;
-      }
-    }
-    status_2_InterruptFree = TRUE;
-  }
+  gpio_enable_xpin_irq(STATUS_2, FALSE);
+  puts("STATUS_2: ISR");
+  timer_config(status_2_CheckTimer, TRUE, ONE_SHOT, STATUS_TIMER);
 }
 #endif
 
@@ -640,6 +644,7 @@ void main(void)
   /* During startup, we should check the STATUS_* pins in case they have already been driven low (CONTACT CLOSED) */
   if (!gpio_get(STATUS_1)) {
     binaryInput.present_value = !gpio_get(STATUS_1);
+    binaryInput3.present_value = FALSE;
     puts("STARTUP check STATUS_1 - CONTACT CLOSED");
   }
   if (!gpio_get(STATUS_2)) {
@@ -723,6 +728,7 @@ void main(void)
     }
     /* End of interactive menu */
 
+    gpio_enable_xpin_irq(STATUS_1, TRUE);
     sys_watchdog_reset();
     sys_xbee_tick();
   }
