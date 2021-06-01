@@ -96,12 +96,12 @@ extern uint8_t wakeup_irq;
 /// \cond 
 #ifdef ENABLE_BANK1_GPIO_IRQ
 uint8_t kbimod1_reg = 0;
-uint8_t kbiedg1_reg = 0;
+uint16_t kbiedg1_reg = 0;
 #endif
 
 #ifdef ENABLE_BANK2_GPIO_IRQ
 uint8_t kbimod2_reg = 0;
-uint8_t kbiedg2_reg = 0;
+uint16_t kbiedg2_reg = 0;
 #endif
 
 #ifdef ENABLE_PORT_0
@@ -441,7 +441,7 @@ void gpio_irq_enable(bool_t enable)
 }
 
 static int _gpio_config_irq(xpin_t pin, bool_t enable, bool_t config, 
-							bool_t type, bool_t edge)
+							bool_t type, uint8_t edge)
 {
 	volatile uint8_t *port;
 	uint8_t portbit = XPIN_GET_PORTBIT_MASK(pin);
@@ -469,7 +469,7 @@ static int _gpio_config_irq(xpin_t pin, bool_t enable, bool_t config,
 			else
 				KBI1ES_KBEDG5 = edge;
 			kbimod1_reg = (kbimod1_reg & ~(1 << 5)) | (type << 5);
-			kbiedg1_reg = (kbiedg1_reg & ~(1 << 5)) | (edge << 5);
+			kbiedg1_reg = (kbiedg1_reg & ~(3 << 10)) | (edge << 10);
 		}
 		KBI1PE_KBIPE5 = enable;
 		break;
@@ -484,7 +484,7 @@ static int _gpio_config_irq(xpin_t pin, bool_t enable, bool_t config,
 			else
 				KBI1ES_KBEDG4 = edge;
 			kbimod1_reg = (kbimod1_reg & ~(1 << 4)) | (type << 4);
-			kbiedg1_reg = (kbiedg1_reg & ~(1 << 4)) | (edge << 4);
+			kbiedg1_reg = (kbiedg1_reg & ~(3 << 8)) | (edge << 8);
 		}
 		KBI1PE_KBIPE4 = enable;
 		break;
@@ -499,7 +499,7 @@ static int _gpio_config_irq(xpin_t pin, bool_t enable, bool_t config,
 			else
 				KBI1ES_KBEDG2 = edge;
 			kbimod1_reg = (kbimod1_reg & ~(1 << 2)) | (type << 2);
-			kbiedg1_reg = (kbiedg1_reg & ~(1 << 2)) | (edge << 2);
+			kbiedg1_reg = (kbiedg1_reg & ~(3 << 4)) | (edge << 4);
 		}
 		KBI1PE_KBIPE2 = enable;
 		break;
@@ -514,7 +514,7 @@ static int _gpio_config_irq(xpin_t pin, bool_t enable, bool_t config,
 			else
 				KBI1ES_KBEDG7 = edge;
 			kbimod1_reg = (kbimod1_reg & ~(1 << 7)) | (type << 7);
-			kbiedg1_reg = (kbiedg1_reg & ~(1 << 7)) | (edge << 7);
+			kbiedg1_reg = (kbiedg1_reg & ~(3 << 14)) | (edge << 14);
 		}
 		KBI1PE_KBIPE7 = enable;
 		break;
@@ -529,7 +529,7 @@ static int _gpio_config_irq(xpin_t pin, bool_t enable, bool_t config,
 			else
 				KBI1ES_KBEDG1 = edge;
 			kbimod1_reg = (kbimod1_reg & ~(1 << 1)) | (type << 1);
-			kbiedg1_reg = (kbiedg1_reg & ~(1 << 1)) | (edge << 1);
+			kbiedg1_reg = (kbiedg1_reg & ~(3 << 2)) | (edge << 2);
 		}
 		KBI1PE_KBIPE1 = enable;
 		break;
@@ -544,7 +544,7 @@ static int _gpio_config_irq(xpin_t pin, bool_t enable, bool_t config,
 			else
 				KBI1ES_KBEDG6 = edge;
 			kbimod1_reg = (kbimod1_reg & ~(1 << 6)) | (type << 6);
-			kbiedg1_reg = (kbiedg1_reg & ~(1 << 6)) | (edge << 6);
+			kbiedg1_reg = (kbiedg1_reg & ~(3 << 12)) | (edge << 12);
 		}
 		KBI1PE_KBIPE6 = enable;
 		break;
@@ -554,12 +554,11 @@ static int _gpio_config_irq(xpin_t pin, bool_t enable, bool_t config,
 		if (config) {
 			if (type == GPIO_CFG_EDGE_IRQ)
 				/* See NOTE 1 */
-				KBI1ES_KBEDG3 = gpio_get(KBI1PE_KBIPE3_XPIN) == edge ?
-																!edge : edge;
+				KBI1ES_KBEDG3 = !gpio_get(KBI1PE_KBIPE3_XPIN);
 			else
 				KBI1ES_KBEDG3 = edge;
 			kbimod1_reg = (kbimod1_reg & ~(1 << 3)) | (type << 3);
-			kbiedg1_reg = (kbiedg1_reg & ~(1 << 3)) | (edge << 3);
+			kbiedg1_reg = (kbiedg1_reg & ~(3 << 6)) | (edge << 6);
 		}
 		KBI1PE_KBIPE3 = enable;
 		break;
@@ -569,12 +568,11 @@ static int _gpio_config_irq(xpin_t pin, bool_t enable, bool_t config,
 		if (config) {
 			if (type == GPIO_CFG_EDGE_IRQ)
 				/* See NOTE 1 */
-				KBI1ES_KBEDG0 = gpio_get(KBI1PE_KBIPE0_XPIN) == edge ?
-																!edge : edge;
+				KBI1ES_KBEDG0 = !gpio_get(KBI1PE_KBIPE0_XPIN);
 			else
-				KBI1ES_KBEDG0 = edge;
+				KBI1ES_KBEDG0 = edge < 2 ? edge : 0;
 			kbimod1_reg = (kbimod1_reg & ~(1 << 0)) | (type << 0);
-			kbiedg1_reg = (kbiedg1_reg & ~(1 << 0)) | (edge << 0);
+			kbiedg1_reg = (kbiedg1_reg & ~(3 << 0)) | (edge << 0);
 		}
 		KBI1PE_KBIPE0 = enable;
 		break;
@@ -591,7 +589,7 @@ static int _gpio_config_irq(xpin_t pin, bool_t enable, bool_t config,
 			else
 				KBI2ES_KBEDG5 = edge;
 			kbimod2_reg = (kbimod2_reg & ~(1 << 5)) | (type << 5);
-			kbiedg2_reg = (kbiedg2_reg & ~(1 << 5)) | (edge << 5);
+			kbiedg2_reg = (kbiedg2_reg & ~(3 << 10)) | (edge << 10);
 		}
 		KBI2PE_KBIPE5 = enable;
 		break;
@@ -606,7 +604,7 @@ static int _gpio_config_irq(xpin_t pin, bool_t enable, bool_t config,
 			else
 				KBI2ES_KBEDG4 = edge;
 			kbimod2_reg = (kbimod2_reg & ~(1 << 4)) | (type << 4);
-			kbiedg2_reg = (kbiedg2_reg & ~(1 << 4)) | (edge << 4);
+			kbiedg2_reg = (kbiedg2_reg & ~(3 << 8)) | (edge << 8);
 		}
 		KBI2PE_KBIPE4 = enable;
 		break;
@@ -621,7 +619,7 @@ static int _gpio_config_irq(xpin_t pin, bool_t enable, bool_t config,
 			else
 				KBI2ES_KBEDG7 = edge;
 			kbimod2_reg = (kbimod2_reg & ~(1 << 7)) | (type << 7);
-			kbiedg2_reg = (kbiedg2_reg & ~(1 << 7)) | (edge << 7);
+			kbiedg2_reg = (kbiedg2_reg & ~(3 << 14)) | (edge << 14);
 		}
 		KBI2PE_KBIPE7 = enable;
 		break;
@@ -645,11 +643,12 @@ static int _gpio_config_irq(xpin_t pin, bool_t enable, bool_t config,
  *						See \ref macros_irq for more information.
  *	@param[in]	edge	0 to detect the interruption with a high level or 
  *						a rise edge. 1 to detect it with a low level or a 
- *						fall edge. See \ref macros_irq for more information.
+ *						fall edge. 2 to detect it with both.
+ *						See \ref macros_irq for more information.
  *	@retval		EINVAL	invalid xpin_t parameter (not IRQ capable pin).
  *	@retval		0		on success.
  */
-int gpio_config_irq(xpin_t pin, bool_t type, bool_t edge)
+int gpio_config_irq(xpin_t pin, bool_t type, uint8_t edge)
 {
 	return _gpio_config_irq(pin, 1, 1, type, edge);
 }
@@ -713,7 +712,10 @@ void gpio_isr(void)
 		if (irqcandidate & 0x01) {
 			if (kbimod1_reg & 0x01) {
 				KBI1ES_KBEDG0 = !KBI1ES_KBEDG0;
-				if (~(kbi1_val ^ kbiedg1_reg) & 0x01)
+				if (kbiedg1_reg & 0x02)
+					/* We trigger on both slopes */
+					gpio_irq_handler_KBI1PE_KBIPE0_XPIN();
+				else if (~(kbi1_val ^ kbiedg1_reg) & 0x01)
 					/* Edge irq on active slope */
 					gpio_irq_handler_KBI1PE_KBIPE0_XPIN();
 			} else {
@@ -726,7 +728,10 @@ void gpio_isr(void)
 		if (irqcandidate & 0x02) {
 			if (kbimod1_reg & 0x02) {
 				KBI1ES_KBEDG1 = !KBI1ES_KBEDG1;
-				if (~(kbi1_val ^ kbiedg1_reg) & 0x02)
+				if (kbiedg1_reg & 0x08)
+					/* We trigger on both slopes */
+					gpio_irq_handler_KBI1PE_KBIPE1_XPIN();
+				else if (~(kbi1_val ^ (kbiedg1_reg >> 1)) & 0x02)
 					/* Edge irq on active slope */
 					gpio_irq_handler_KBI1PE_KBIPE1_XPIN();
 			} else {
@@ -739,7 +744,10 @@ void gpio_isr(void)
 		if (irqcandidate & 0x04) {
 			if (kbimod1_reg & 0x04) {
 				KBI1ES_KBEDG2 = !KBI1ES_KBEDG2;
-				if (~(kbi1_val ^ kbiedg1_reg) & 0x04)
+				if (kbiedg1_reg & 0x20)
+					/* We trigger on both slopes */
+					gpio_irq_handler_KBI1PE_KBIPE2_XPIN();
+				else if (~(kbi1_val ^ (kbiedg1_reg >> 2)) & 0x04)
 					/* Edge irq on active slope */
 					gpio_irq_handler_KBI1PE_KBIPE2_XPIN();
 			} else {
@@ -752,7 +760,10 @@ void gpio_isr(void)
 		if (irqcandidate & 0x08) {
 			if (kbimod1_reg & 0x08) {
 				KBI1ES_KBEDG3 = !KBI1ES_KBEDG3;
-				if (~(kbi1_val ^ kbiedg1_reg) & 0x08)
+				if (kbiedg1_reg & 0x80)
+					/* We trigger on both slopes */
+					gpio_irq_handler_KBI1PE_KBIPE3_XPIN();
+				else if (~(kbi1_val ^ (kbiedg1_reg >> 3)) & 0x08)
 					/* Edge irq on active slope */
 					gpio_irq_handler_KBI1PE_KBIPE3_XPIN();
 			} else {
@@ -765,7 +776,10 @@ void gpio_isr(void)
 		if (irqcandidate & 0x10) {
 			if (kbimod1_reg & 0x10) {
 				KBI1ES_KBEDG4 = !KBI1ES_KBEDG4;
-				if (~(kbi1_val ^ kbiedg1_reg) & 0x10)
+				if (kbiedg1_reg & 0x200)
+					/* We trigger on both slopes */
+					gpio_irq_handler_KBI1PE_KBIPE4_XPIN();
+				else if (~(kbi1_val ^ (kbiedg1_reg >> 4)) & 0x10)
 					/* Edge irq on active slope */
 					gpio_irq_handler_KBI1PE_KBIPE4_XPIN();
 			} else {
@@ -778,7 +792,10 @@ void gpio_isr(void)
 		if (irqcandidate & 0x20) {
 			if (kbimod1_reg & 0x20) {
 				KBI1ES_KBEDG5 = !KBI1ES_KBEDG5;
-				if (~(kbi1_val ^ kbiedg1_reg) & 0x20)
+				if (kbiedg1_reg & 0x800)
+					/* We trigger on both slopes */
+					gpio_irq_handler_KBI1PE_KBIPE5_XPIN();
+				else if (~(kbi1_val ^ (kbiedg1_reg >> 5)) & 0x20)
 					/* Edge irq on active slope */
 					gpio_irq_handler_KBI1PE_KBIPE5_XPIN();
 			} else {
@@ -791,7 +808,10 @@ void gpio_isr(void)
 		if (irqcandidate & 0x40) {
 			if (kbimod1_reg & 0x40) {
 				KBI1ES_KBEDG6 = !KBI1ES_KBEDG6;
-				if (~(kbi1_val ^ kbiedg1_reg) & 0x40)
+				if (kbiedg1_reg & 0x2000)
+					/* We trigger on both slopes */
+					gpio_irq_handler_KBI1PE_KBIPE6_XPIN();
+				else if (~(kbi1_val ^ (kbiedg1_reg >> 6)) & 0x40)
 					/* Edge irq on active slope */
 					gpio_irq_handler_KBI1PE_KBIPE6_XPIN();
 			} else {
@@ -804,7 +824,10 @@ void gpio_isr(void)
 		if (irqcandidate & 0x80) {
 			if (kbimod1_reg & 0x80) {
 				KBI1ES_KBEDG7 = !KBI1ES_KBEDG7;
-				if (~(kbi1_val ^ kbiedg1_reg) & 0x80)
+				if (kbiedg1_reg & 0x8000)
+					/* We trigger on both slopes */
+					gpio_irq_handler_KBI1PE_KBIPE7_XPIN();
+				else if (~(kbi1_val ^ (kbiedg1_reg >> 7)) & 0x80)
 					/* Edge irq on active slope */
 					gpio_irq_handler_KBI1PE_KBIPE7_XPIN();
 			} else {
@@ -825,7 +848,10 @@ void gpio_isr(void)
 		if (irqcandidate & 0x10) {
 			if (kbimod2_reg & 0x10) {
 				KBI2ES_KBEDG4 = !KBI2ES_KBEDG4;
-				if (~(kbi2_val ^ kbiedg2_reg) & 0x10)
+				if (kbiedg2_reg & 0x200)
+					/* We trigger on both slopes */
+					gpio_irq_handler_KBI2PE_KBIPE4_XPIN();
+				else if (~(kbi2_val ^ (kbiedg2_reg >> 4)) & 0x10)
 					/* Edge irq on active slope */
 					gpio_irq_handler_KBI2PE_KBIPE4_XPIN();
 			} else {
@@ -838,7 +864,10 @@ void gpio_isr(void)
 		if (irqcandidate & 0x20) {
 			if (kbimod2_reg & 0x20) {
 				KBI2ES_KBEDG5 = !KBI2ES_KBEDG5;
-				if (~(kbi2_val ^ kbiedg2_reg) & 0x20)
+				if (kbiedg2_reg & 0x800)
+					/* We trigger on both slopes */
+					gpio_irq_handler_KBI2PE_KBIPE5_XPIN();
+				else if (~(kbi2_val ^ (kbiedg2_reg >> 5)) & 0x20)
 					/* Edge irq on active slope */
 					gpio_irq_handler_KBI2PE_KBIPE5_XPIN();
 			} else {
@@ -851,7 +880,10 @@ void gpio_isr(void)
 		if (irqcandidate & 0x80) {
 			if (kbimod2_reg & 0x80) {
 				KBI2ES_KBEDG7 = !KBI2ES_KBEDG7;
-				if (~(kbi2_val ^ kbiedg2_reg) & 0x80)
+				if (kbiedg2_reg & 0x8000)
+					/* We trigger on both slopes */
+					gpio_irq_handler_KBI2PE_KBIPE7_XPIN();
+				else if (~(kbi2_val ^ (kbiedg2_reg >> 7)) & 0x80)
 					/* Edge irq on active slope */
 					gpio_irq_handler_KBI2PE_KBIPE7_XPIN();
 			} else {

@@ -32,8 +32,11 @@
 /* How long a relay should be activated upon trigger (in microseconds) */
 #define RELAY_TIMER         125000
 
-/* Debounce Timer (in microseconds) */
-#define DEBOUNCE_TIMER      500000
+/* Status Interval Timer (in microseconds) - 4 seconds */
+#define STATUS_TIMER        4000000
+
+/* Status Oscillation count before setting state operating (Counting both slopes) */
+#define STATUS_OSC_COUNT    4
 
 /* Settings END */
  
@@ -45,11 +48,13 @@ extern wpan_ep_state_t custom_ha_ep_state;
 extern wpan_ep_state_t custom_ha_ep2_state;
 extern wpan_ep_state_t custom_ha_ep3_state;
 extern wpan_ep_state_t custom_ha_ep4_state;
+extern wpan_ep_state_t custom_ha_ep5_state;
 
 #define CUSTOM_ENDPOINT     0xEA
 #define CUSTOM_ENDPOINT2    0xEB
 #define CUSTOM_ENDPOINT3    0xEC
 #define CUSTOM_ENDPOINT4    0xED
+#define CUSTOM_ENDPOINT5    0xEE
 #define CUSTOM_EP_PROFILE   0x0104
 
  /* With this macro the prototypes of clusters' callbacks and extern variables are included in endpoints.c
@@ -59,6 +64,7 @@ extern wpan_ep_state_t custom_ha_ep4_state;
                                 extern const wpan_cluster_table_entry_t custom_ep2_clusters[]; \
                                 extern const wpan_cluster_table_entry_t custom_ep3_clusters[]; \
                                 extern const wpan_cluster_table_entry_t custom_ep4_clusters[]; \
+                                extern const wpan_cluster_table_entry_t custom_ep5_clusters[]; \
                                 int custom_ep_basic_cluster(const wpan_envelope_t FAR *, void FAR *);
 
  /* This is a wpan_endpoint_table_entry_t structure, see its declaration in aps.h, the '{}' are because they
@@ -67,6 +73,7 @@ extern wpan_ep_state_t custom_ha_ep4_state;
                              {CUSTOM_ENDPOINT2, CUSTOM_EP_PROFILE, custom_ep_basic_cluster, &custom_ha_ep2_state, 0x0002, 0x00, custom_ep2_clusters}, \
                              {CUSTOM_ENDPOINT3, CUSTOM_EP_PROFILE, custom_ep_basic_cluster, &custom_ha_ep3_state, 0x0002, 0x00, custom_ep3_clusters}, \
                              {CUSTOM_ENDPOINT4, CUSTOM_EP_PROFILE, custom_ep_basic_cluster, &custom_ha_ep4_state, 0x0002, 0x00, custom_ep4_clusters}, \
+                             {CUSTOM_ENDPOINT5, CUSTOM_EP_PROFILE, custom_ep_basic_cluster, &custom_ha_ep5_state, 0x0002, 0x00, custom_ep5_clusters}, \
                              ZDO_ENDPOINT(zdo_ep_state)
 
  /* This macro is automatically defined if Process Incoming frames, Node Discovery Support or Over-the-Air
