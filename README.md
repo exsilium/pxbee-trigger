@@ -22,8 +22,10 @@ Programmable XBee Trigger that is ZigBee Home Automation profile compliant. The 
 | [2 pin Fixed Terminal Block (PCB)](https://www.mouser.ee/ProductDetail/538-39357-0002)                               | [Molex](https://www.molex.com)                    |        1 | Mouser No: 538-39357-0002     | [PDF](https://www.mouser.ee/datasheet/2/276/0393570002_TERMINAL_BLOCKS-227759.pdf) | B      |
 | [9 pin Fixed Terminal Block (PCB)](https://www.mouser.ee/ProductDetail/538-39357-0009)                               | [Molex](https://www.molex.com)                    |        1 | Mouser No: 538-39357-0009     | [PDF](https://www.mouser.ee/datasheet/2/276/0393570009_TERMINAL_BLOCKS-136250.pdf) | B      |
 | [Antenna with RP-SMA Connector](https://www.mouser.ee/ProductDetail/712-ANT-2.4-CW-RAH)                              | [Linx Technologies](https://linxtechnologies.com) |        1 | Mouser No: 712-ANT-2.4-CW-RAH | [PDF](https://www.mouser.ee/datasheet/2/238/ant-2.4-cw-rah-ccc-1659143.pdf)        |        |
+| [6 pin Debug Header](https://www.mouser.ee/ProductDetail/538-22-28-8065)                                             | [Molex](https://www.molex.com)                    |        1 | Mouser No: 538-22-28-8065     | [PDF](https://www.mouser.ee/datasheet/2/276/0022288065_PCB_HEADERS-159204.pdf)     | O      |
+| [2 pin Reset Header](https://www.mouser.ee/ProductDetail/Molex/22-28-5027)                                           | [Molex](https://www.molex.com)                    |        1 | Mouser No: 538-22-28-5027     | [PDF](https://www.mouser.ee/ProductDetail/Molex/22-28-5027)                        | O      |
 
-Standard 3.5 width headers are used. Option A) uses pluggable termination; B) Fixed screw termination; Components can be easily switched with other termination blocks or use direct wire soldering.
+Standard 3.5 width headers are used. Option **A**) uses pluggable termination; **B**) Fixed screw termination; **O**) Parts are optional and meant for development; Components can easily be switched with other termination blocks or use direct wire soldering.
 
 ## Compiling
 
