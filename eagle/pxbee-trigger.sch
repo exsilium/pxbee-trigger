@@ -224,8 +224,8 @@ DIN A4, landscape with location and doc. field</description>
 <wire x1="3.25" y1="-4.255" x2="-3.25" y2="-4.255" width="0.1" layer="51"/>
 <wire x1="-3.25" y1="-4.255" x2="-3.25" y2="4.255" width="0.1" layer="51"/>
 <wire x1="-3.25" y1="1.705" x2="-0.7" y2="4.255" width="0.1" layer="51"/>
-<wire x1="-4.995" y1="4.255" x2="3.25" y2="4.255" width="0.2" layer="21"/>
 <wire x1="-3.25" y1="-4.255" x2="3.25" y2="-4.255" width="0.2" layer="21"/>
+<wire x1="-3.25" y1="4.254" x2="3.25" y2="4.254" width="0.2" layer="21"/>
 </package>
 <package name="MGFS1R52415">
 <description>&lt;b&gt;MGFS1R52415&lt;/b&gt;&lt;br&gt;
@@ -396,10 +396,10 @@ DIN A4, landscape with location and doc. field</description>
 <wire x1="-2.5" y1="4.15" x2="30.9" y2="4.15" width="0.1" layer="51"/>
 <wire x1="30.9" y1="4.15" x2="30.9" y2="-3.15" width="0.1" layer="51"/>
 <wire x1="30.9" y1="-3.15" x2="-2.5" y2="-3.15" width="0.1" layer="51"/>
-<wire x1="0" y1="-3.15" x2="30.9" y2="-3.15" width="0.2" layer="21"/>
+<wire x1="-2.4892" y1="-3.15" x2="30.9" y2="-3.15" width="0.2" layer="21"/>
 <wire x1="30.9" y1="-3.15" x2="30.9" y2="4.15" width="0.2" layer="21"/>
 <wire x1="30.9" y1="4.15" x2="-2.5" y2="4.15" width="0.2" layer="21"/>
-<wire x1="-2.5" y1="4.15" x2="-2.5" y2="0" width="0.2" layer="21"/>
+<wire x1="-2.5" y1="4.15" x2="-2.5" y2="-3.1496" width="0.2" layer="21"/>
 </package>
 <package name="CAPPRD500W65D1000H1750">
 <description>&lt;b&gt;10Dx16H&lt;/b&gt;&lt;br&gt;

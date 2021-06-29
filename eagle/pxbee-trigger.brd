@@ -6772,6 +6772,18 @@
 <text x="32.661" y="1.874" size="0.8128" layer="22" rot="MR0">A3</text>
 <text x="36.237" y="1.906" size="0.8128" layer="22" rot="MR0">A4</text>
 <text x="29.246" y="1.842" size="0.8128" layer="22" rot="MR0">C2</text>
+<text x="13.589" y="35.179" size="1.778" layer="21">+</text>
+<text x="26.543" y="49.403" size="1.778" layer="21">+</text>
+<text x="8.128" y="5.842" size="1.778" layer="22" rot="MR0">1</text>
+<text x="11.557" y="5.842" size="1.778" layer="22" rot="MR0">2</text>
+<text x="15.113" y="5.842" size="1.778" layer="22" rot="MR0">3</text>
+<text x="18.542" y="5.842" size="1.778" layer="22" rot="MR0">4</text>
+<text x="22.098" y="5.842" size="1.778" layer="22" rot="MR0">5</text>
+<text x="25.527" y="5.842" size="1.778" layer="22" rot="MR0">6</text>
+<text x="29.083" y="5.842" size="1.778" layer="22" rot="MR0">7</text>
+<text x="32.639" y="5.842" size="1.778" layer="22" rot="MR0">8</text>
+<text x="36.068" y="5.842" size="1.778" layer="22" rot="MR0">9</text>
+<text x="10.747" y="36.719" size="1.27" layer="21">C1</text>
 </plain>
 <libraries>
 <library name="parts">
@@ -6795,8 +6807,8 @@
 <wire x1="3.25" y1="-4.255" x2="-3.25" y2="-4.255" width="0.1" layer="51"/>
 <wire x1="-3.25" y1="-4.255" x2="-3.25" y2="4.255" width="0.1" layer="51"/>
 <wire x1="-3.25" y1="1.705" x2="-0.7" y2="4.255" width="0.1" layer="51"/>
-<wire x1="-4.995" y1="4.255" x2="3.25" y2="4.255" width="0.2" layer="21"/>
 <wire x1="-3.25" y1="-4.255" x2="3.25" y2="-4.255" width="0.2" layer="21"/>
+<wire x1="-3.25" y1="4.254" x2="3.25" y2="4.254" width="0.2" layer="21"/>
 </package>
 <package name="DIOAD1405W86L465D235">
 <description>&lt;b&gt;AXIAL-LEAD-CASE 59-10&lt;/b&gt;&lt;br&gt;
@@ -6866,10 +6878,10 @@
 <wire x1="-2.5" y1="4.15" x2="30.9" y2="4.15" width="0.1" layer="51"/>
 <wire x1="30.9" y1="4.15" x2="30.9" y2="-3.15" width="0.1" layer="51"/>
 <wire x1="30.9" y1="-3.15" x2="-2.5" y2="-3.15" width="0.1" layer="51"/>
-<wire x1="0" y1="-3.15" x2="30.9" y2="-3.15" width="0.2" layer="21"/>
+<wire x1="-2.4892" y1="-3.15" x2="30.9" y2="-3.15" width="0.2" layer="21"/>
 <wire x1="30.9" y1="-3.15" x2="30.9" y2="4.15" width="0.2" layer="21"/>
 <wire x1="30.9" y1="4.15" x2="-2.5" y2="4.15" width="0.2" layer="21"/>
-<wire x1="-2.5" y1="4.15" x2="-2.5" y2="0" width="0.2" layer="21"/>
+<wire x1="-2.5" y1="4.15" x2="-2.5" y2="-3.1496" width="0.2" layer="21"/>
 </package>
 <package name="APAN3103">
 <description>&lt;b&gt;APAN3103-1&lt;/b&gt;&lt;br&gt;
