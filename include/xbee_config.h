@@ -9,7 +9,7 @@
 #define __XBEE_CONFIG_H_
 
 /* Project definitions */
-#define APP_VERSION_STRING              "Trigger v0.4.0-SNAPSHOT"
+#define APP_VERSION_STRING              "Trigger v0.4.0-rc.0"
 #define CONFIG_XBEE_ZB
 #define CONFIG_XBEE_THT
 #define CONFIG_XBEE_S2CTH
