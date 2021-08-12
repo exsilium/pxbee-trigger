@@ -1,7 +1,14 @@
 # pxbee-trigger
 
-Programmable XBee Trigger that is ZigBee Home Automation profile compliant. The testing of this feature is carried out using [SmartThings](https://www.smartthings.com) Hub v3. A default ZigBee device handler can be used for limited functionality.
+Programmable XBee Trigger that is ZigBee Home Automation profile compliant. Possible to integrate with [SmartThings](https://www.smartthings.com) Hub v3 or a separate ZigBee / XBee network. Includes a reference hardware design up to 4 channels with a full BOM, perfect for DIYselfers out there.
 
+Used in real life to automate garage / gate automatons.
+
+## Hardware example
+
+![Picture](doc/board_top.jpg)
+
+An assembled board without a mounted XBee radio. Metric scale for reference (cm.). Board dimension - 51 x 57 mm.
 ## Bill of Materials (BOM)
 
 | Designator  | Component                                                                                                            | Manufacturer                                      | Quantity | SKU / Part nr.                | Spec                                                                               | Option |
@@ -46,7 +53,7 @@ Standard 3.5 width headers are used. Option **A**) uses pluggable termination; *
 
 ## Trigger
 
-Send a Unicast ZCL "On" command to trigger the connected relay for 125ms. The state of the switch remains in "Off" state. Broadcast command is ignored by default.
+Send a Unicast ZCL "On" command to trigger the connected relay for 125ms (Relay 1). The state of the switch remains in "Off" state. Broadcast command is ignored by default.
 
 ```
 Endpoint: 0xEA,
@@ -64,6 +71,16 @@ The following defines can be altered in `custom.h` prior to compilation to chang
 | `PXBEE_TRIGGER_IGNORE_BROADCAST` | When enabled, ignores broadcast commands and reacts only when unicast messages are sent to the specific address (ignores All On/All Off commands). | Enabled |
 | `ZCL_MANUFACTURER` | The reported manufacturer string. For SmartThings local execution support without custom device handler, set this to "Leviton". | "PXBee" |
 | `ZCL_MODEL` | The reported model string. For SmartThings local execution support without custom device handler, set this to "ZSS-10". | "Trigger" |
+
+### Endpoints
+
+|  Endpoint | Description |
+| ----------| ----------- |
+| `0xEA` | Relay 1 |
+| `0xEB` | Relay 2 |
+| `0xEC` | Relay 3 |
+| `0xED` | Relay 4 |
+| `0xEE` | Auxiliary binary input endpoint |
 
 ## License
 
