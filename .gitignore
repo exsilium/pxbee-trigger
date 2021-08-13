@@ -1,3 +1,11 @@
 .DS_Store
 err.txt
 obj
+
+# Autodesk Eagle Backup files
+*.s#?
+*.b#?
+*.l#?
+*.b$?
+*.s$?
+*.l$?
