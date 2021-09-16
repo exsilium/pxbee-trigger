@@ -50,10 +50,10 @@ extern wpan_ep_state_t custom_ha_ep3_state;
 extern wpan_ep_state_t custom_ha_ep4_state;
 extern wpan_ep_state_t custom_ha_ep5_state;
 
-#define CUSTOM_ENDPOINT     0xEA
-#define CUSTOM_ENDPOINT2    0xEB
-#define CUSTOM_ENDPOINT3    0xEC
-#define CUSTOM_ENDPOINT4    0xED
+#define CUSTOM_ENDPOINT     0xEA /* Relay 1 */
+#define CUSTOM_ENDPOINT2    0xEB /* Relay 2 */
+#define CUSTOM_ENDPOINT3    0xEC /* Relay 3 */
+#define CUSTOM_ENDPOINT4    0xED /* Relay 4 */
 #define CUSTOM_ENDPOINT5    0xEE
 #define CUSTOM_EP_PROFILE   0x0104
 
